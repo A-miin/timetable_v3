@@ -1,10 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html><head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>DersPlan Ana Sayfa</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+            <style>
+
+            body {
+                background: #F5F5F5;
+                font: 18px/1.5 sans-serif;
+                font-size: 0.9rem !important;
+            }
+            div.col-md-4, div.col-md-6{
+                padding-right: 2em;
+                padding-left: 2em;
+            }
+
+            .jumbotron {
+                padding: 1rem 1rem !important;
+                background-color: #607d8b8c !important;
+                border-bottom: 1em solid #e3051394;
+            }
+            h1, h2 { line-height: 1.2; margin: 0 0 .5em; }
+            h1 { font-size: 36px; }
+            h2 { font-size: 21px; margin-bottom: 1em; }
+            p { margin: 0 0 1em 0; }
+            a { color: #0000F0; }
+            a:hover { text-decoration: none; }
+            code { background: #F5F5F5; max-width: 100px; padding: 2px 6px; word-wrap: break-word; }
+            #wrapper { background: #FFF; margin: 1em auto; max-width: 800px; width: 95%; }
+            #container { padding: 2em; }
+            #welcome, #status { margin-bottom: 2em; }
+            #welcome h1 span { display: block; font-size: 75%; }
+            #icon-status, #icon-book { float: left; height: 64px; margin-right: 1em; margin-top: -4px; width: 64px; }
+            #icon-book { display: none; }
+
+            @media (min-width: 768px) {
+                #wrapper { width: 80%; margin: 2em auto; }
+                #icon-book { display: inline-block; }
+                #status a, #next a { display: block; }
+
+                @-webkit-keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+                @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+                .sf-toolbar { opacity: 0; -webkit-animation: fade-in 1s .2s forwards; animation: fade-in 1s .2s forwards;}
+            }
+
+
+            .chekbox-big {
+                zoom: 1;
+                transform: scale(2);
+                -ms-transform: scale(2);
+                -webkit-transform: scale(2);
+                -o-transform: scale(2);
+                -moz-transform: scale(2);
+                transform-origin: 0 0;
+                -ms-transform-origin: 0 0;
+                -webkit-transform-origin: 0 0;
+                -o-transform-origin: 0 0;
+                -moz-transform-origin: 0 0;
+                -webkit-transform-origin: 0 0;
+            }
+
+        </style>
+
+                    <link rel="stylesheet" href="/css/5e39822.css">
+
+
+
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
+
+
+
 <body>
-<h1>timetables</h1>
-</body>
-</html>
+<div class="jumbotron text-center" style="margin-bottom:0">
+
+    <a href="/dersplan/usage"><img src="/bundles/timetable/images/logo.png"></a>
+    <h3>Kırgızistan Türkiye Manas Üniversitesi</h3>
+    <p><a style="color:#000000" href="/dersplan/course/">Ders Planı Sistemi</a></p>
+
+
+
+</div>
+
+
+
+<div class=".container-fluid">
+    <div class="row justify-content-md-center">
+        <div class="col-md-4" style="text-align: center">
+
+
+                    <br>
+    <h1>Dersplanı işlemleri </h1>
+    <br>
+
+    <a class="btn btn-outline-primary btn-block" href="/teacher">Öğretim Elemanları Bazında Haftalık Plan</a>
+    <br>
+    <a class="btn btn-outline-primary btn-block" href="/department">Bölüm Bazında Haftalık Plan</a>
+    <br>
+    <a class="btn btn-outline-primary btn-block" href="/room">Derslikler Bazında Plan</a>
+    <br>
+
+
+
+
+
+                    </div>
+
+    </div>
+</div>
+
+
+
+
+
+            <script src="/js/ff33110.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+					var allTD =  $( "td" );
+			var h = new Object();
+			h['8:00-8:45'] = '9:00-9:35';
+			h['8:55-9:40'] = '9:45-10:20';
+			h['9:50-10:35'] ='10:30-11:05';
+			h['10:45-11:30']='11:15-11:50';
+			h['11:40-12:25']='12:00-12:35';
+			h['13:30-14:15']='13:30-14:05';
+			h['14:25-15:10']='14:15-14:50';
+			h['15:20-16:05']='15:00-15:35';
+			h['16:15-17:00']='15:45-16:20';
+			h['17:10-17:55']='16:30-17:05';
+			h['18:05-18:50']='17:15-17:50';
+			h['19:00-19:45']='18:00-18:35';
+
+
+
+			function my_replace(a)
+			{
+				for (index = 0; index < a.length; ++index)
+				{
+				if(h.hasOwnProperty(a[index].textContent))
+					a[index].textContent=h[a[index].textContent];
+				}
+			}
+			my_replace(allTD);
+			});
+		</script>
+
+
+
+
+
+</body></html>
