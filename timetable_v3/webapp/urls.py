@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import home
-
-
+from .views import home, TeacherTimeTableView
 
 urlpatterns = [
-    path('',home)
+    path('',home),
+    path('teacher/', TeacherTimeTableView.as_view(), name='teacher_list')
 ]

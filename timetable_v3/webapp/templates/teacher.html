@@ -89,29 +89,47 @@
 
 <div class=".container-fluid">
     <div class="row justify-content-md-center">
-        <div class="col-md-4" style="text-align: center">
-
-
+        <div class="col-md-6">
                     <br>
-    <h1>Dersplanı işlemleri </h1>
-    <br>
+    <h3>Öğretim Elemanları Bazında Haftalık Plan</h3>
+        <a href="/">Ana sayfa</a>
+            <hr>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="teacher_id">Öğretmen seçiniz</label>
+                    <select name="teacher" id="teacher_id" class="form-control">
+                        {% for teacher in teachers %}
+                            {% if teacher.id == selected_teacher %}
+                        <option value="{{ teacher.id }}" selected>{{ teacher.name }}</option>
+                            {% else %}
+                            <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            <input type="submit" value="Göster" class="btn btn-info btn-block">
+            </form>
 
-    <a class="btn btn-outline-primary btn-block" href="/teacher">Öğretim Elemanları Bazında Haftalık Plan</a>
-    <br>
-    <a class="btn btn-outline-primary btn-block" href="/department">Bölüm Bazında Haftalık Plan</a>
-    <br>
-    <a class="btn btn-outline-primary btn-block" href="/room">Derslikler Bazında Plan</a>
-    <br>
+        {% if timetable %}
+            <table><thead><tr><td><h4>Ders Planında Renklerin Anlamı</h4></td></tr></thead>
+                <tbody>
+                    <tr class="table-primary"><td>Ortak dersler</td></tr>
+                    <tr class="table-success"><td>Zorunlu Dersler</td></tr>
+                    <tr class="table-warning"><td>Seçmeli Dersler</td></tr>
+                    <tr class="table-secondary"><td>Bolum Dışı Seçmeli Dersler</td></tr>'
+                </tbody></table>
 
+            {% for value in timetable %}
+                {{ value.course }}
+                {{ value.time_day }}
+                {{ value.time_hour }}
+            {% endfor %}
+        {% endif %}
 
-
-
-
-                    </div>
+        <a href="/">Ana sayfa</a>
 
     </div>
 </div>
-
-            <script src="{% static 'js/bootstrap.js' %}"></script>
-
+</div>
 </body></html>
