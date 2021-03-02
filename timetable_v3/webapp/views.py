@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.base import View
 
-from webapp.models import Teacher, TimeTable, TimeDay, TimeHour
+from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department
 
 
 def home(request):
@@ -87,4 +87,29 @@ class TeacherTimeTableView(View):
 
     def get_queryset(self):
         return Teacher.objects.all().order_by('name')
+
+class DepartmentView(View):
+    template_name = 'department.html'
+
+    def get(self, request, *args, **kwargs):
+        departments = self.get_departments()
+        return render(request, self.template_name, context={'departments': departments})
+
+    def post(self, request, *args, **kwargs):
+        department_id = self.request.POST.get('department', 0)
+        department = get_object_or_404(Department, id=department_id)
+        timetable = TimeTable.objects.filter(course__department=department).order_by('time_hour_id', 'time_day_id')
+        days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
+        result = []
+        for table in timetable:
+            print(table.course)
+
+        departments = self.get_departments()
+
+        return render(request, self.template_name, context={'departments': departments, 'timetable': result,
+                                                            'selected_department': department,
+                                                            'days': days, 'hours': hours})
+
+    def get_departments(self):
+        return Department.objects.all().order_by('name')
 

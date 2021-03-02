@@ -15,7 +15,7 @@
 
                     {% with timetable|index:i as table %}
                         {% if table.course %}
-                            {%  if table.course_type == 5 %}
+                            {%  if table.classroom == 'None' %}
                                  <td class="table-{{ table.course_type|get_type }}" >Ayrılmış (Reserved)</td>
                                 {% else %}
                         <td class="table-{{ table.course_type|get_type }}" >{{ table.course }}<br>{{ table.department }}<br>{{ table.classroom }}</td>
