@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_tags %}
 <html><head>
     <meta charset="UTF-8">
     <title>DersPlan Ana Sayfa</title>
@@ -94,13 +95,14 @@
     <h3>Öğretim Elemanları Bazında Haftalık Plan</h3>
         <a href="/">Ana sayfa</a>
             <hr>
+
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="teacher_id">Öğretmen seçiniz</label>
                     <select name="teacher" id="teacher_id" class="form-control">
                         {% for teacher in teachers %}
-                            {% if teacher.id == selected_teacher %}
+                            {% if teacher.id == selected_teacher.id %}
                         <option value="{{ teacher.id }}" selected>{{ teacher.name }}</option>
                             {% else %}
                             <option value="{{ teacher.id }}">{{ teacher.name }}</option>
@@ -120,16 +122,14 @@
                     <tr class="table-secondary"><td>Bolum Dışı Seçmeli Dersler</td></tr>'
                 </tbody></table>
 
-            {% for value in timetable %}
-                {{ value.course }}
-                {{ value.time_day }}
-                {{ value.time_hour }}
-            {% endfor %}
+
         {% endif %}
 
         <a href="/">Ana sayfa</a>
-
     </div>
+    {% if timetable %}
+        {% include 'partial/teacher_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
+    {% endif %}
 </div>
 </div>
 </body></html>
