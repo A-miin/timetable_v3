@@ -29,31 +29,24 @@
                     <br>
     <h3>Öğretim Elemanları Bazında Haftalık Plan</h3>
         <a href="/">Ana sayfa</a>
-
-
             <hr>
 
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="teacher_id">Öğretmen seçiniz</label>
-                    <select name="teacher" id="teacher_id" class="form-control">
-                        {% for teacher in teachers %}
-                            {% if teacher.id == selected_teacher.id %}
-                        <option value="{{ teacher.id }}" selected>{{ teacher.name }}</option>
+                    <label for="department_id">Bölüm seçiniz</label>
+                    <select name="department" id="department_id" class="form-control">
+                        {% for department in departments %}
+                            {% if department.id == selected_department.id %}
+                        <option value="{{ department.id }}" selected>{{ department.name }}</option>
                             {% else %}
-                            <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            <option value="{{ department.id }}">{{ department.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
                 </div>
-            <div class="form-group">
-                <label for="teacher_number_id">Sicil numaranızı giriniz</label>
-                <input id="teacher_number_id" type="number" name="teacher_number" step="000.001" min="0"  class="form-control">
-            </div>
             <input type="submit" value="Göster" class="btn btn-info btn-block">
             </form>
-
 
         {% if timetable %}
             <table><thead><tr><td><h4>Ders Planında Renklerin Anlamı</h4></td></tr></thead>
@@ -67,9 +60,6 @@
 
         <a href="/">Ana sayfa</a>
     </div>
-    {% if timetable %}
-        {% include 'partial/teacher_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
-    {% endif %}
 </div>
 </div>
 </body>

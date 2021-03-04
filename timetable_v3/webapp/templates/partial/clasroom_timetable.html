@@ -1,0 +1,28 @@
+{% load custom_tags %}
+<div class="col-md-11 mt-5">
+    <h3>{{ teacher.name }}</h3>
+         <table class="table table-bordered">
+            <tr>
+                <td class="center">#</td>
+                {% for day in days %}
+                    <td class="center">{{ day.label }}</td>
+                {% endfor %}
+            </tr>
+            {% for hour in hours %}
+                <tr>
+                <td>{{ hour.label }}</td>
+                {% for i in hour.id|times %}
+
+                    {% with timetable|index:i as table %}
+                        {% if table.course %}
+                        <td class="table-{{ table.course_type|get_type }}" >{{ table.course }}<br>{{ table.faculty }}<br>{{ table.department }}<br>{{ table.teacher }}</td>
+
+                            {% else %}
+                        <td></td>
+                        {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </table>
+    </div>
