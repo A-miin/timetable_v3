@@ -78,7 +78,13 @@ class ClassRoom(models.Model):
     room_type = models.ForeignKey(to=RoomType, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True, db_column='roomType_id')
 
     def __str__(self):
-        return f'{self.building.short_name}-{self.name}'
+        return f'{self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
+
+    @property
+    def short_name(self):
+        if self.building:
+            return f'{self.building.short_name}-{self.name}'
+        return self.name
 
     class Meta:
         db_table = 'classroom'
@@ -117,6 +123,12 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+    def full_name(self):
+        if self.name == 'reserved':
+            return 'reserved'
+        return f'{self.code} {self.name}'
+
     class Meta:
         db_table = 'course'
 

@@ -25,6 +25,7 @@ def get_type(type_code):
         1: 'primary',
         2: 'warning',
         3: 'secondary',
+        4: 'light',
         5: 'secondary'
     }
     return types[type_code]

@@ -34,13 +34,14 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="department_id">Bölüm seçiniz</label>
-                    <select name="department" id="department_id" class="form-control">
-                        {% for department in departments %}
-                            {% if department.id == selected_department.id %}
-                        <option value="{{ department.id }}" selected>{{ department.name }}</option>
+                    <label for="department_id">Derslik seçiniz</label>
+
+                    <select name="room" id="room_id" class="form-control">
+                        {% for room in rooms %}
+                            {% if room.id == selected_room.id %}
+                        <option value="{{ room.id }}" selected>{{ room }}</option>
                             {% else %}
-                            <option value="{{ department.id }}">{{ department.name }}</option>
+                            <option value="{{ room.id }}">{{ room }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -60,6 +61,9 @@
 
         <a href="/">Ana sayfa</a>
     </div>
+    {% if timetable %}
+        {% include 'partial/clasroom_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
+    {% endif %}
 </div>
 </div>
 </body>

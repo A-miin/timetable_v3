@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.base import View
 
-from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department
+from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom
 
 
 def home(request):
@@ -12,24 +12,27 @@ def home(request):
 
 
 class ListTimeTable(object):
-    def __init__(self, course, classroom,course_type, teacher, department, time_day_id, time_hour_id):
-        if course:
-            self.course = course
-            self.classroom = classroom
-            self.teacher = teacher
-            self.course_type = course_type
-            self.department = department
-
-        else:
-            self.course = None
-            self.classroom = None
-            self.teacher = None
-            self.course_type = None
-            self.department = None
-
+    def __init__(self, time_day_id, time_hour_id, course=None, classroom=None,course_type=None, teacher=None, department=None, faculty=None):
+        self.course = course
+        self.classroom = classroom
+        self.teacher = teacher
+        self.course_type = course_type
+        self.department = department
+        self.faculty = faculty
         self.time_day_id = time_day_id
         self.time_hour_id = time_hour_id
 
+    def get_values(self, table: TimeTable):
+        if self.classroom is None:
+            self.course = table.course.full_name
+            self.course_type = table.course.type.type_code
+            if self.course_type != 5:
+                self.teacher = table.course.teacher.name
+                self.classroom = table.classroom.short_name
+                self.department = table.course.department.name
+                self.faculty = table.course.department.faculty.name
+        else:
+            self.classroom += f', {table.classroom.short_name}'
 
 
 class TeacherTimeTableView(View):
@@ -44,41 +47,12 @@ class TeacherTimeTableView(View):
         teacher = get_object_or_404(Teacher, id=teacher_id)
         timetable = TimeTable.objects.filter(course__teacher=teacher).order_by('time_hour_id', 'time_day_id')
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
-        result = []
-        for hour in hours:
-            for day in days:
-                if index < len(timetable) and timetable[index].time_hour_id == hour.id and timetable[index].time_day_id == day.id:
-                    while index < len(timetable) and timetable[index].time_hour_id == hour.id and timetable[index].time_day_id == day.id:
-                        table = timetable[index]
-                        if result:
-                            if result[-1].time_day_id == table.time_day_id and result[-1].time_hour_id == table.time_hour_id:
-                                result[-1].classroom += f', {table.classroom}'
-                                index += 1
-                            else:
-                                result.append(ListTimeTable(course=f'{table.course.code} {table.course.name}',
-                                                            classroom=str(table.classroom), teacher=table.course.teacher.name,
-                                                            department=table.course.department.name,
-                                                            course_type=table.course.type.type_code,
-                                                            time_day_id=table.time_day_id, time_hour_id=table.time_hour_id))
-                                index += 1
-                        else:
-                            result.append(ListTimeTable(course=f'{table.course.code} {table.course.name}',
-                                                        classroom=str(table.classroom),
-                                                        course_type=table.course.type.type_code,
-                                                        teacher=table.course.teacher.name,
-                                                        department=table.course.department.name,
-                                                        time_day_id=table.time_day_id,
-                                                        time_hour_id=table.time_hour_id))
-                            index += 1
-                else:
-                    result.append(ListTimeTable(course=None,
-                                                classroom=None,
-                                                teacher=None,
-                                                course_type=None,
-                                                department=None,
-                                                time_day_id=day.id,
-                                                time_hour_id=hour.id))
-
+        result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
+        for table in result:
+            while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
+                    timetable[index].time_day_id == table.time_day_id:
+                table.get_values(timetable[index])
+                index += 1
         queryset = self.get_queryset()
 
         return render(request, self.template_name, context={'teachers': queryset, 'timetable': result,
@@ -113,3 +87,31 @@ class DepartmentView(View):
     def get_departments(self):
         return Department.objects.all().order_by('name')
 
+
+class RoomView(View):
+    template_name = 'classroom.html'
+
+    def get(self, request, *args, **kwargs):
+        rooms = self.get_rooms()
+        return render(request, self.template_name, context={'rooms': rooms})
+
+    def post(self, request, *args, **kwargs):
+        room_id = self.request.POST.get('room', 0)
+        room = get_object_or_404(ClassRoom, id=room_id)
+        timetable = TimeTable.objects.filter(classroom=room).order_by('time_hour_id', 'time_day_id')
+        days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
+        result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
+        for table in result:
+            while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
+                    timetable[index].time_day_id == table.time_day_id:
+                table.get_values(timetable[index])
+                index += 1
+
+        rooms = self.get_rooms()
+
+        return render(request, self.template_name, context={'rooms': rooms, 'timetable': result,
+                                                            'selected_room': room,
+                                                            'days': days, 'hours': hours})
+
+    def get_rooms(self):
+        return ClassRoom.objects.all().order_by('building__short_name')
