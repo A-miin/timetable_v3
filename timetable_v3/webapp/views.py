@@ -43,8 +43,12 @@ class TeacherTimeTableView(View):
         return render(request, self.template_name, context={'teachers': queryset})
 
     def post(self, request, *args, **kwargs):
-        teacher_id = self.request.POST.get('teacher', 0)
-        teacher = get_object_or_404(Teacher, id=teacher_id)
+        teacher_id = self.request.POST.get('teacher',0)
+        teacher_code = self.request.POST.get('teacher_number',0)
+        if teacher_code=='':
+            teacher = get_object_or_404(Teacher, id=teacher_id)
+        else:
+            teacher = get_object_or_404(Teacher, code=int(teacher_code))
         timetable = TimeTable.objects.filter(course__teacher=teacher).order_by('time_hour_id', 'time_day_id')
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
         result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
@@ -57,7 +61,7 @@ class TeacherTimeTableView(View):
 
         return render(request, self.template_name, context={'teachers': queryset, 'timetable': result,
                                                             'selected_teacher': teacher,
-                                                            'days': days, 'hours': hours})
+                                                            'days': days, 'hours': hours, 'teacher_code':teacher_code})
 
     def get_queryset(self):
         return Teacher.objects.all().order_by('name')
