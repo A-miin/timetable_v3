@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
@@ -77,12 +79,23 @@ class DepartmentView(View):
     def post(self, request, *args, **kwargs):
         department_id = self.request.POST.get('department', 0)
         department = get_object_or_404(Department, id=department_id)
-        timetable = TimeTable.objects.filter(course__department=department).order_by('time_hour_id', 'time_day_id')
-        days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
-        result = []
-        for table in timetable:
-            print(table.course)
+        grades = department.grade_years.all().values_list('grade', flat=True).order_by('grade')
 
+        timetable = TimeTable.objects.filter(course__department=department).order_by('course__year','time_hour_id', 'time_day_id')
+        days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
+        years = {grade: [] for grade in grades}
+        for table in timetable:
+            years[table.course.year].append(table)
+        result = {}
+        for year, timetable in years.items():
+            temp_result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
+            index = 0
+            for table in temp_result:
+                while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
+                        timetable[index].time_day_id == table.time_day_id:
+                    table.get_values(timetable[index])
+                    index += 1
+            result[year] = temp_result
         departments = self.get_departments()
 
         return render(request, self.template_name, context={'departments': departments, 'timetable': result,

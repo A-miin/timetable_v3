@@ -120,6 +120,7 @@ class Course(models.Model):
     unpositioned_theory_hours = models.IntegerField(db_column='unpositionedTeorikHours', null=True, blank=True)
     unpositioned_practice_hours = models.IntegerField(db_column='unpositionedUygulamaHours', null=True, blank=True)
     semester = models.CharField(max_length=255, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name

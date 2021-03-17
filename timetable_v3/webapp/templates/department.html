@@ -41,6 +41,38 @@
 
         <a href="/">Ana sayfa</a>
     </div>
+    {% if timetable %}
+    <div class="col-md-11">
+    <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
+        {% for year, table in timetable.items %}
+            {% if forloop.first %}
+            <li class="nav-item ml-3" role="presentation">
+                <a style="font-size: 2em; color: #e3051394" class="nav-link active show" id="{{ year }}-tab" data-toggle="tab" href="#{{ year }}" role="tab" aria-controls="7-SINIF" aria-selected="true">{{ year }}-SINIF</a>
+            </li>
+            {% else %}
+            <li class="nav-item ml-3" role="presentation">
+                <a style="font-size: 2em; color: #e3051394" class="nav-link" id="{{ year }}-tab" data-toggle="tab" href="#{{ year }}" role="tab" aria-controls="{{ year }}-SINIF" aria-selected="false">{{ year }}-SINIF</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        {% for year, table in timetable.items %}
+            {% if forloop.first %}
+        <div class="tab-pane fade active show" id="{{ year }}" role="tabpanel" aria-labelledby="{{ year }}-tab">
+            {% include 'partial/department_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=table %}
+            </div>
+            {% else %}
+                <div class="tab-pane fade" id="{{ year }}" role="tabpanel" aria-labelledby="{{ year }}-tab">
+            {% include 'partial/department_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=table %}
+            </div>
+
+            {% endif %}
+        {% endfor %}
+    </div>
+    </div>
+    {% endif %}
 </div>
 </div>
 {% endblock content %}
