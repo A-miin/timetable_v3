@@ -103,7 +103,6 @@ class RoomView(View):
         return render(request, self.template_name, context={'rooms': rooms,'building_short_names':building_short_names })
 
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         building_short_names = Building.objects.order_by('short_name')
         room_id = self.request.POST.get('room', 0)
         room = get_object_or_404(ClassRoom, id=room_id)
