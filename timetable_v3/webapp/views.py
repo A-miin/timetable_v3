@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.base import View
 
-from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom
+from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building
 
 
 def home(request):
@@ -43,6 +43,7 @@ class TeacherTimeTableView(View):
         return render(request, self.template_name, context={'teachers': queryset})
 
     def post(self, request, *args, **kwargs):
+        rooms = ClassRoom.objects.order_by('building__short_name')
         teacher_id = self.request.POST.get('teacher',0)
         teacher_code = self.request.POST.get('teacher_number',0)
         if teacher_code=='':
@@ -95,11 +96,15 @@ class DepartmentView(View):
 class RoomView(View):
     template_name = 'classroom.html'
 
+
     def get(self, request, *args, **kwargs):
+        building_short_names = Building.objects.order_by('short_name')
         rooms = self.get_rooms()
-        return render(request, self.template_name, context={'rooms': rooms})
+        return render(request, self.template_name, context={'rooms': rooms,'building_short_names':building_short_names })
 
     def post(self, request, *args, **kwargs):
+        print(request.POST)
+        building_short_names = Building.objects.order_by('short_name')
         room_id = self.request.POST.get('room', 0)
         room = get_object_or_404(ClassRoom, id=room_id)
         timetable = TimeTable.objects.filter(classroom=room).order_by('time_hour_id', 'time_day_id')
@@ -114,8 +119,8 @@ class RoomView(View):
         rooms = self.get_rooms()
 
         return render(request, self.template_name, context={'rooms': rooms, 'timetable': result,
-                                                            'selected_room': room,
-                                                            'days': days, 'hours': hours})
+                                                            'selected_room': room,'selected_building_short': room.building.short_name,
+                                                            'days': days, 'hours': hours, 'building_short_names':building_short_names})
 
     def get_rooms(self):
         return ClassRoom.objects.all().order_by('building__short_name')
