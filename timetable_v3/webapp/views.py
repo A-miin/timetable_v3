@@ -81,7 +81,11 @@ class DepartmentView(View):
         department = get_object_or_404(Department, id=department_id)
         grades = department.grade_years.all().values_list('grade', flat=True).order_by('grade')
 
-        timetable = TimeTable.objects.filter(course__department=department).order_by('course__year','time_hour_id', 'time_day_id')
+        timetable = TimeTable.objects.\
+            filter(course__department=department).select_related('course', 'course__department', 'course__teacher',
+                                                                 'course__department__faculty', 'classroom',
+                                                                 'course__type', 'classroom__building').\
+            order_by('course__year','time_hour_id', 'time_day_id')
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
         years = {grade: [] for grade in grades}
         for table in timetable:
