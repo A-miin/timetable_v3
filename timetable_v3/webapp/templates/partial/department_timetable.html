@@ -14,14 +14,25 @@
                 {% for i in hour.id|times %}
 
                     {% with timetable|index:i as table %}
-                        {% if table.course %}
-                        <td class="table-{{ table.course_type|get_type }}" >{{ table.course }}<br>{{ table.teacher }}<br>{{ table.classroom }}<br></td>
-
-                            {% else %}
-                        <td></td>
+                        {% if table.first.course %}
+                            <td class="table-{{ table.first.course_type|get_type }}" >
+                            {% if table.first.course %}
+                                {{ table.first.course }}<br>{{ table.first.teacher }}<br>{{ table.first.classroom }}<br>
+                            {% endif %}
+                            {% if table.second.course %}
+                                <br>
+                                {{ table.second.course }}<br>{{ table.second.teacher }}<br>{{ table.second.classroom }}<br>
+                            {% endif %}
+                            {% if table.third.course %}
+                                <br>
+                                {{ table.third.course }}<br>{{ table.third.teacher }}<br>{{ table.third.classroom }}<br>
+                            {% endif %}
+                        </td>
+                        {% else %}
+                            <td></td>
                         {% endif %}
-                        {% endwith %}
-                    {% endfor %}
+                    {% endwith %}
+                {% endfor %}
                 </tr>
             {% endfor %}
             </table>

@@ -24,6 +24,9 @@ class ListTimeTable(object):
         self.time_day_id = time_day_id
         self.time_hour_id = time_hour_id
 
+    def is_empty(self):
+        return self.classroom is None
+
     def get_values(self, table: TimeTable):
         if self.classroom is None:
             self.course = table.course.full_name
@@ -34,7 +37,9 @@ class ListTimeTable(object):
                 self.department = table.course.department.name
                 self.faculty = table.course.department.faculty.name
         else:
+
             self.classroom += f', {table.classroom.short_name}'
+
 
 
 class TeacherTimeTableView(View):
@@ -92,12 +97,21 @@ class DepartmentView(View):
             years[table.course.year].append(table)
         result = {}
         for year, timetable in years.items():
-            temp_result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
+            temp_result = [{'first':ListTimeTable(time_day_id=day.id, time_hour_id=hour.id),
+                            'second':ListTimeTable(time_day_id=day.id, time_hour_id=hour.id),
+                            'third':ListTimeTable(time_day_id=day.id, time_hour_id=hour.id),
+                            } for hour in hours for day in days]
             index = 0
             for table in temp_result:
-                while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
-                        timetable[index].time_day_id == table.time_day_id:
-                    table.get_values(timetable[index])
+                while index < len(timetable) and timetable[index].time_hour_id == table['first'].time_hour_id and \
+                        timetable[index].time_day_id == table['first'].time_day_id:
+                    if table['first'].is_empty():
+                        table['first'].get_values(timetable[index])
+                    elif table['second'].is_empty():
+                        table['second'].get_values(timetable[index])
+                    else:
+                        table['third'].get_values(timetable[index])
+
                     index += 1
             result[year] = temp_result
         departments = self.get_departments()
