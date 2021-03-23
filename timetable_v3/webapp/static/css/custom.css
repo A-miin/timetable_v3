@@ -7,6 +7,23 @@
                 padding-right: 2em;
                 padding-left: 2em;
             }
+            .menuWrapper {
+                padding: 20px 0 20px 0;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+            }
+            .menuWrapper a{
+                margin-left: 10px;
+
+            }
+            .menuWrapper a:first-child{
+                margin-left: 0;
+
+            }
+
 
             .jumbotron {
                 padding: 1rem 1rem !important;
