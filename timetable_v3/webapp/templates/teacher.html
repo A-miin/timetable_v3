@@ -15,7 +15,7 @@
             <hr>
 
             <form method="post">
-                {% csrf_token %}
+            {% csrf_token %}
                 <div class="form-group">
                     <label for="teacher_id">Öğretmen seçiniz</label>
                     <select name="teacher" id="teacher_id" class="form-control">
@@ -55,6 +55,27 @@
     {% if timetable %}
         {% include 'partial/teacher_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
     {% endif %}
+
 </div>
 </div>
+<script>
+    let sicode = document.getElementById("teacher_number_id");
+    let teachersListSelect = document.getElementById("teacher_id");
+
+    function enable(){
+
+        if (sicode.value === ''){
+            teachersListSelect.disabled = false;
+        } else {
+            teachersListSelect.disabled = true;
+        }
+    }
+
+    sicode.addEventListener("input", () => {
+        console.log(sicode.value);
+
+        enable();
+    });
+
+</script>
 {% endblock content %}
