@@ -12,22 +12,16 @@
                 <tr>
                 <td>{{ hour.label }}</td>
                 {% for i in hour.id|times %}
-
                     {% with timetable|index:i as table %}
-                        {% if table.first.course %}
-                            <td class="table-{{ table.first.course_type|get_type }}" >
-                            {% if table.first.course %}
-                                {{ table.first.course }}<br>{{ table.first.teacher }}<br>{{ table.first.classroom }}<br>
-                            {% endif %}
-                            {% if table.second.course %}
-                                <br>
-                                {{ table.second.course }}<br>{{ table.second.teacher }}<br>{{ table.second.classroom }}<br>
-                            {% endif %}
-                            {% if table.third.course %}
-                                <br>
-                                {{ table.third.course }}<br>{{ table.third.teacher }}<br>{{ table.third.classroom }}<br>
-                            {% endif %}
-                        </td>
+                        {% if table.0.course %}
+                            <td class="table-{{ table.0.course_type|get_type }}" >
+                            {% for key, t in table.items %}
+                                {% if t.course %}
+                                    {{ t.course }}<br>{{ t.teacher }}<br>{{ t.classroom }}<br>
+                                    <br>
+                                {% endif %}
+                            {% endfor %}
+                            </td>
                         {% else %}
                             <td></td>
                         {% endif %}
