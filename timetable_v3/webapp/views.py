@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.base import View
 
-from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building
+from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building, Faculty
 
 
 def home(request):
@@ -79,7 +79,8 @@ class DepartmentView(View):
 
     def get(self, request, *args, **kwargs):
         departments = self.get_departments()
-        return render(request, self.template_name, context={'departments': departments})
+        faculties = Faculty.objects.all().order_by("name")
+        return render(request, self.template_name, context={'departments': departments, 'faculties':faculties})
 
     def post(self, request, *args, **kwargs):
         department_id = self.request.POST.get('department', 0)
@@ -115,10 +116,10 @@ class DepartmentView(View):
                     index += 1
             result[year] = temp_result
         departments = self.get_departments()
-
+        faculties = Faculty.objects.all().order_by("name")
         return render(request, self.template_name, context={'departments': departments, 'timetable': result,
                                                             'selected_department': department,
-                                                            'days': days, 'hours': hours})
+                                                            'days': days, 'hours': hours, 'faculties':faculties})
 
     def get_departments(self):
         return Department.objects.all().order_by('name')

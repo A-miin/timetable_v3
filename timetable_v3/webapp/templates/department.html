@@ -19,13 +19,27 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
+                    <label for="fakulte_id">Fakülte seçiniz</label>
+                    <select onchange="faculty()" name="fakulte" id="fakulte_id" class="form-control">
+                        <option value="none" selected>---------</option>
+                        {% for faculty in faculties %}
+                            {% if faculty.id == selected_faculty.id %}
+                            <option value="{{ faculty.id }}" selected>{{ faculty.name }}</option>
+                            {% else %}
+                            <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="department_id">Bölüm seçiniz</label>
                     <select name="department" id="department_id" class="form-control">
+                        <option value="none" selected>---------</option>
                         {% for department in departments %}
                             {% if department.id == selected_department.id %}
-                        <option value="{{ department.id }}" selected>{{ department.name }}</option>
+                            <option data-faculty-id="{{ department.faculty.id }}" value="{{ department.id }}" selected>{{ department.name }}</option>
                             {% else %}
-                            <option value="{{ department.id }}">{{ department.name }}</option>
+                            <option data-faculty-id="{{ department.faculty.id }}" value="{{ department.id }}">{{ department.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -79,4 +93,25 @@
     {% endif %}
 </div>
 </div>
+
+<script>
+    const faculties = document.getElementById('fakulte_id');
+      faculties.onchange = e => {
+          const currentFaculty = e.target.value;
+          const departments = document.getElementById('department_id');
+          let first = true;
+          for (const option of departments.options) {
+              if (option.getAttribute('data-faculty-id') === currentFaculty) {
+                  if (first) {
+                      first = false;
+                      departments.value = option.value;
+                    }
+                  option.style.display = 'block';
+              } else {
+                  option.style.display = 'none';
+              }
+          }
+          if (first) departments.value = 'none';
+      };
+</script>
 {% endblock content %}
