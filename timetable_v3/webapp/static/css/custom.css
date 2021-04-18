@@ -13,16 +13,19 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                flex-wrap: wrap;
 
             }
             .menuWrapper a{
                 margin-left: 10px;
+                margin-bottom: 5px;
 
             }
             .menuWrapper a:first-child{
                 margin-left: 0;
 
             }
+
 
 
             .jumbotron {

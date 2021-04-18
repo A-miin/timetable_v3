@@ -6,6 +6,60 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+    function createPDF(obj) {
+        var id = obj.id;
+        var sTable;
+
+        switch (id) {
+          case 'teacherid':
+            sTable = document.getElementById('teacher_id03').innerHTML;
+            break;
+          case 'but_1':
+            sTable= document.getElementById('department_1').innerHTML;
+            break;
+           case `but_2`:
+            sTable= document.getElementById(`department_2`).innerHTML;
+            break;
+           case `but_3`:
+            sTable= document.getElementById(`department_3`).innerHTML;
+            break;
+           case `but_4`:
+            sTable= document.getElementById(`department_4`).innerHTML;
+            break;
+            case `but_5`:
+            sTable= document.getElementById(`department_5`).innerHTML;
+            break;
+           case `but_6`:
+            sTable= document.getElementById(`department_6`).innerHTML;
+            break;
+          case 'classroomid':
+            sTable = document.getElementById('classroom_id03').innerHTML;
+            break;
+          default:
+            sTable = document.getElementById('teacher_id03').innerHTML;  ;
+        }
+
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>Timetable</title>');
+        win.document.write('<link rel="stylesheet" href="../static/css/bootstrap.css">');
+        win.document.write('<link rel="stylesheet" href="../static/css/custom.css">');
+
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close();  // CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    }
+    </script>
+
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
