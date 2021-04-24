@@ -2,7 +2,8 @@ from django.urls import path
 
 from secretariat.views import TimeTableView, CustomLoginView, CustomLogoutView, ListClassRoomView, CreateClassRoomView, \
     UpdateClassRoomView, DeleteClassRoomView, ListTeacherView, CreateTeacherView, UpdateTeacherView, DeleteTeacherView, \
-    ListGradeYearView, CreateGradeYearView, UpdateGradeYearView, DeleteGradeYearView
+    ListGradeYearView, CreateGradeYearView, UpdateGradeYearView, DeleteGradeYearView, ListCourseView, CreateCourseView, \
+    UpdateCourseView, DeleteCourseView
 
 app_name = 'secretariat'
 
@@ -22,4 +23,8 @@ urlpatterns = [
     path('grade_year/create/', CreateGradeYearView.as_view(), name='create_grade_year'),
     path('grade_year/update/<int:id>/', UpdateGradeYearView.as_view(), name='update_grade_year'),
     path('grade_year/delete/<int:id>/', DeleteGradeYearView.as_view(), name='delete_grade_year'),
+    path('courses/', ListCourseView.as_view(), name='list_course'),
+    path('course/create/', CreateCourseView.as_view(), name='create_course'),
+    path('course/update/<int:id>/', UpdateCourseView.as_view(), name='update_course'),
+    path('course/delete/<int:id>/', DeleteCourseView.as_view(), name='delete_course'),
 ]

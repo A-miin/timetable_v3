@@ -1,6 +1,6 @@
 from django import forms
 
-from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear
+from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear, Course
 from django.contrib.auth.models import User
 
 
@@ -64,8 +64,36 @@ class GradeYearForm(forms.ModelForm):
             queryset=Department.objects.filter(faculty=user.faculty.faculty),
             label='Bölüm')
 
-
     class Meta:
         model = GradeYear
         fields = ('department',
                   'grade')
+
+
+class CourseForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):
+        super(CourseForm, self).__init__(*args, **kwargs)
+        self.fields['department'] = forms.ModelChoiceField(
+            queryset=Department.objects.filter(faculty=user.faculty.faculty),
+            label='Bölüm')
+        self.fields['user'] = forms.ModelChoiceField(queryset=User.objects.all(),
+                                                     widget=forms.HiddenInput(attrs={'class': 'hideable'}))
+        self.fields['user'].initial = user.id
+
+    class Meta:
+        model = Course
+        fields = ('department',
+                  'teacher',
+                  'theory_hours',
+                  'practice_hours',
+                  'max_students',
+                  'code',
+                  'name',
+                  'type',
+                  'theory_room_type',
+                  'practice_room_type',
+                  'credits',
+                  'etkin',
+                  'sube',
+                  'semester',
+                  'year')

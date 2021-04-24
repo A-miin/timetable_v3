@@ -6,8 +6,8 @@ from django.views.generic import ListView, CreateView, DeleteView, DetailView, U
 
 from django.urls import reverse
 
-from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm
-from webapp.models import ClassRoom, Teacher, GradeYear
+from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm, CourseForm
+from webapp.models import ClassRoom, Teacher, GradeYear, Course
 
 
 class CustomLoginView(LoginView):
@@ -181,4 +181,55 @@ class DeleteGradeYearView(DeleteView):
     def get_success_url(self):
         return reverse('secretariat:list_grade_year')
 
+
+class ListCourseView(ListView):
+    template_name = 'course/list.html'
+    context_object_name = 'courses'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ListCourseView, self).get_context_data(**kwargs)
+        context['total_count'] = len(context['courses'])
+        return context
+
+    def get_queryset(self):
+        return Course.objects.filter(user_id=self.request.user.id)
+
+
+class CreateCourseView(CreateView):
+    form_class = CourseForm
+    template_name = 'course/create.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateCourseView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course')
+
+
+class UpdateCourseView(UpdateView):
+    form_class = CourseForm
+    template_name = 'course/update.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Course, id=self.kwargs.get('id', 0))
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateCourseView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course')
+
+
+class DeleteCourseView(DeleteView):
+    template_name = 'partial/delete.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Course, id=self.kwargs.get('id', 0))
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course')
 

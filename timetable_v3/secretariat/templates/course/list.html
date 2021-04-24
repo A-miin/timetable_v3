@@ -1,0 +1,72 @@
+{% extends 'secretariat-base.html' %}
+{% block content %}
+
+<div class="container-l  mx-auto" style="width: 90%">
+	<div class="table-responsive">
+		<div class="table-wrapper">
+			<div class="table-title">
+				<div class="row">
+					<div class="col-sm-6">
+						<h2><b>Dersler</b></h2>
+					</div>
+					<div class="col-sm-6">
+						<a href="{% url 'secretariat:create_course' %}" class="btn btn-success"><i class="material-icons">&#xE147;</i> <span>Yeni Sınıf olustur</span></a>
+					</div>
+				</div>
+			</div>
+			<table class="table table-striped table-hover">
+				<thead>
+					<tr>
+						<th>Donem</th>
+						<th>Ders Kodu</th>
+						<th>Ders adı</th>
+						<th>Ders Türü</th>
+						<th>Öğretmen</th>
+						<th>T</th>
+						<th>U</th>
+						<th>K</th>
+						<th>Max öğrenci sayisi</th>
+						<th>Bölüm</th>
+						<th>Teorik Ders Için Derslik Tibi</th>
+						<th>Uygulama Ders Için Derslik Tibi</th>
+						<th>Etkin</th>
+						<th>DersPlana Yerleşme statüsü </th>
+						<th>Şübe</th>
+
+                        <th>Işlemler</th>
+					</tr>
+				</thead>
+				<tbody>
+                {% for course in courses %}
+					<tr>
+						<td>{{ course.semester}}</td>
+						<td>{{ course.code}}</td>
+                        <td>{{ course.name}}</td>
+						<td>{{ course.type}}</td>
+						<td>{{ course.teacher}}</td>
+						<td>{{ course.theory_hours}}</td>
+						<td>{{ course.practice_hours}}</td>
+						<td>{{ course.credits}}</td>
+						<td>{{ course.max_students}}</td>
+						<td>{{ course.department}}</td>
+						<td>{{ course.theory_room_type}}</td>
+						<td>{{ course.practice_room_type}}</td>
+						<td>{{ course.etkin}}</td>
+						<td>OK</td>
+						<td>{{ course.sube}}</td>
+
+						<td>
+							<a href="{% url 'secretariat:update_course' id=course.id %}" class="edit"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+							<a href="{% url 'secretariat:delete_course' id=course.id %}" class="delete"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+						</td>
+					</tr>
+                {% endfor %}
+				</tbody>
+			</table>
+			<div class="clearfix">
+				<div class="hint-text">Total: {{ total_count }} entries</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
