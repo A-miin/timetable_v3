@@ -95,6 +95,12 @@ class ClassRoom(models.Model):
             return f'{self.building.short_name}-{self.name}'
         return self.name
 
+    @property
+    def full_name(self):
+        if self.building:
+            return f'{self.building.short_name} - {self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
+        return self.name
+
     class Meta:
         db_table = 'classroom'
 

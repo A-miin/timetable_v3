@@ -6,8 +6,8 @@ from django.views.generic import ListView, CreateView, DeleteView, DetailView, U
 
 from django.urls import reverse
 
-from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm, CourseForm
-from webapp.models import ClassRoom, Teacher, GradeYear, Course
+from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm, CourseForm, CourseVsRoomForm
+from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom
 
 
 class CustomLoginView(LoginView):
@@ -232,4 +232,56 @@ class DeleteCourseView(DeleteView):
 
     def get_success_url(self):
         return reverse('secretariat:list_course')
+
+
+class ListCourseVsRoomView(ListView):
+    template_name = 'coursevsroom/list.html'
+    context_object_name = 'coursevsrooms'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ListCourseVsRoomView, self).get_context_data(**kwargs)
+        context['total_count'] = len(context['coursevsrooms'])
+        return context
+
+    def get_queryset(self):
+        return CourseVsRoom.objects.filter(user_id=self.request.user.id)
+
+
+class CreateCourseVsRoomView(CreateView):
+    form_class = CourseVsRoomForm
+    template_name = 'coursevsroom/create.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateCourseVsRoomView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course_vs_room')
+
+
+class UpdateCourseVsRoomView(UpdateView):
+    form_class = CourseVsRoomForm
+    template_name = 'coursevsroom/update.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(CourseVsRoom, id=self.kwargs.get('id', 0))
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateCourseVsRoomView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course_vs_room')
+
+
+class DeleteCourseVsRoomView(DeleteView):
+    template_name = 'partial/delete.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(CourseVsRoom, id=self.kwargs.get('id', 0))
+
+    def get_success_url(self):
+        return reverse('secretariat:list_course_vs_room')
 

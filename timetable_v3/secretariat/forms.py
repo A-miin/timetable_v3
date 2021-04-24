@@ -1,6 +1,6 @@
 from django import forms
 
-from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear, Course
+from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear, Course, CourseVsRoom
 from django.contrib.auth.models import User
 
 
@@ -97,3 +97,18 @@ class CourseForm(forms.ModelForm):
                   'sube',
                   'semester',
                   'year')
+
+
+class CourseVsRoomForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):
+        super(CourseVsRoomForm, self).__init__(*args, **kwargs)
+        self.fields['user'] = forms.ModelChoiceField(queryset=User.objects.all(),
+                                                     widget=forms.HiddenInput(attrs={'class': 'hideable'}))
+        self.fields['user'].initial = user.id
+
+    class Meta:
+        model = CourseVsRoom
+        fields = ('course',
+                  'classroom',
+                  'lesson_type',
+                  'user')
