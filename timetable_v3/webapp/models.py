@@ -65,6 +65,15 @@ class Teacher(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def type(self):
+        if self.employee_type == 0:
+            return 'Tam Zamanlı'
+        elif self.employee_type == 1:
+            return 'Yarı Zamanlı'
+        else:
+            return 'DSU'
+
     class Meta:
         db_table = 'teacher'
 

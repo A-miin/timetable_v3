@@ -1,6 +1,6 @@
 from django import forms
 
-from webapp.models import ClassRoom, Building, Department, RoomType
+from webapp.models import ClassRoom, Building, Department, RoomType, Teacher
 from django.contrib.auth.models import User
 
 
@@ -25,4 +25,31 @@ class ClassRoomForm(forms.ModelForm):
                   'name',
                   'capacity',
                   'room_type',
+                  'user')
+
+
+EMPLOYEE_TYPE = [
+    (0, 'Tam Zamanlı'),
+    (1, 'Yarı Zamanlı'),
+    (2, 'DSU')
+]
+
+
+class TeacherForm(forms.ModelForm):
+    code = forms.IntegerField(label='Sicil')
+    name = forms.CharField(label='Name')
+    unvan = forms.CharField(label='Unvan')
+    employee_type = forms.ChoiceField(choices=EMPLOYEE_TYPE)
+
+    def __init__(self, user, *args, **kwargs):
+        super(TeacherForm, self).__init__(*args, **kwargs)
+        self.fields['user'] = forms.ModelChoiceField(queryset=User.objects.all(), widget=forms.HiddenInput(attrs={'class': 'hideable'}))
+        self.fields['user'].initial = user.id
+
+    class Meta:
+        model = Teacher
+        fields = ('code',
+                  'name',
+                  'unvan',
+                  'employee_type',
                   'user')

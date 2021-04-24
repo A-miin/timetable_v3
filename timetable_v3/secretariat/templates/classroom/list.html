@@ -22,7 +22,7 @@
 						<th>Derslik Türü</th>
 						<th>Bölüm</th>
 						<th>Bina</th>
-                        <th>İşlemler</th>
+                        <th>İşlevler</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -34,7 +34,7 @@
 						<td>{{ classroom.department.name }}</td>
                         <td>{{ classroom.building.name }}</td>
 						<td>
-							<a href={% url 'secretariat:update_class_room' id=classroom.id %} class="edit"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+							<a href="{% url 'secretariat:update_class_room' id=classroom.id %}" class="edit"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
 							<a href="{% url 'secretariat:delete_class_room' id=classroom.id %}" class="delete"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
 						</td>
 					</tr>
