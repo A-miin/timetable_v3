@@ -1,8 +1,11 @@
 from django.contrib import admin
-from .models import Department, Faculty, Building, RoomType, Teacher, ClassRoom, CourseType,Editor, Course, CourseVsRoom, GradeYear, TimeTableGenerator, TimeDay, TimeHour, TimeTable
+from .models import Department, Faculty, Building, RoomType, Teacher, ClassRoom, CourseType, Editor, Course, \
+    CourseVsRoom, GradeYear, TimeTableGenerator, TimeDay, TimeHour, TimeTable, UserFaculty
+
 
 admin.site.register(Department)
 admin.site.register(Faculty)
+admin.site.register(UserFaculty)
 admin.site.register(RoomType)
 admin.site.register(Teacher)
 admin.site.register(ClassRoom)

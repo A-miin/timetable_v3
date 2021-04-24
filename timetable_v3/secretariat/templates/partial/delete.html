@@ -1,0 +1,15 @@
+{% extends 'secretariat-base.html' %}
+{% block content %}
+    <div class="container mt-5">
+
+    <form method="POST">
+        <h1 class="text-center"> "{{ object }}" - silmek istiyourmusunuz?</h1>
+       {% csrf_token %}
+        <div class="buttons mt-5 text-center">
+        <a href="javascript:history.back()" class="btn btn-primary"> Hayir</a>
+       <button class="btn btn-danger">Evet, sil</button>
+        </div>
+</form>
+
+    </div>
+{% endblock %}

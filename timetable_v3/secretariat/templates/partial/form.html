@@ -1,0 +1,18 @@
+{% csrf_token %}
+
+<div class="container form-horizontal mt-5 mb-5 text-center">
+    <h1>{{ action_text}} </h1>
+            <div class="row">
+                <div class=" card-heading" style="margin:auto;">
+                    <h2 class="title text-center">{{title_text}}</h2>
+                </div>
+                <div class="card-body">
+                        {% for field in form %}
+                            {% include 'partial/form_field.html' %}
+                        {% endfor %}
+                    <div class="card-footer py-0 px-0 w-50 text-center mt-5 mx-auto">
+                    <input class="btn w-100 my-0 py-3  btn--radius-2 btn-success" type="submit" value="Kaydet">
+                    </div>
+                </div>
+            </div>
+</div>

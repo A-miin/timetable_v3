@@ -29,7 +29,7 @@ class Faculty(models.Model):
 
 class UserFaculty(models.Model):
     user = models.OneToOneField(to=User, related_name='faculty', on_delete=models.CASCADE)
-    faculty = models.ForeignKey(to=Faculty, related_name='user_faculties', on_delete=models.CASCADE)
+    faculty = models.OneToOneField(to=Faculty, related_name='user_faculties', on_delete=models.CASCADE)
 
 
 class Department(models.Model):
