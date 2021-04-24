@@ -6,8 +6,8 @@ from django.views.generic import ListView, CreateView, DeleteView, DetailView, U
 
 from django.urls import reverse
 
-from secretariat.forms import ClassRoomForm, TeacherForm
-from webapp.models import ClassRoom, Teacher
+from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm
+from webapp.models import ClassRoom, Teacher, GradeYear
 
 
 class CustomLoginView(LoginView):
@@ -127,4 +127,58 @@ class DeleteTeacherView(DeleteView):
 
     def get_success_url(self):
         return reverse('secretariat:list_teacher')
+
+
+class ListGradeYearView(ListView):
+    template_name = 'grade_year/list.html'
+    context_object_name = 'grade_years'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ListGradeYearView, self).get_context_data(**kwargs)
+        context['total_count'] = len(context['grade_years'])
+        return context
+
+    def get_queryset(self):
+        faculty = self.request.user.faculty.faculty
+        return GradeYear.objects.filter(department__faculty_id=faculty.id)
+
+
+class CreateGradeYearView(CreateView):
+    form_class = GradeYearForm
+    template_name = 'grade_year/create.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateGradeYearView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_grade_year')
+
+
+class UpdateGradeYearView(UpdateView):
+    form_class = GradeYearForm
+    template_name = 'grade_year/update.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(GradeYear, id=self.kwargs.get('id', 0))
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateGradeYearView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('secretariat:list_grade_year')
+
+
+class DeleteGradeYearView(DeleteView):
+    template_name = 'partial/delete.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(GradeYear, id=self.kwargs.get('id', 0))
+
+    def get_success_url(self):
+        return reverse('secretariat:list_grade_year')
+
 
