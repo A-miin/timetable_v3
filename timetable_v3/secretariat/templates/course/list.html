@@ -1,7 +1,7 @@
 {% extends 'secretariat-base.html' %}
 {% block content %}
 
-<div class="container-l  mx-auto" style="width: 90%">
+<div class="container-l  mx-auto">
 	<div class="table-responsive">
 		<div class="table-wrapper">
 			<div class="table-title">
@@ -10,7 +10,7 @@
 						<h2><b>Dersler</b></h2>
 					</div>
 					<div class="col-sm-6">
-						<a href="{% url 'secretariat:create_course' %}" class="btn btn-success"><i class="material-icons">&#xE147;</i> <span>Yeni Sınıf olustur</span></a>
+						<a href="{% url 'secretariat:create_course' %}" class="btn btn-success"><i class="material-icons">&#xE147;</i> <span>Yeni Ders Oluştur</span></a>
 					</div>
 				</div>
 			</div>
@@ -49,11 +49,16 @@
 						<td>{{ course.credits}}</td>
 						<td>{{ course.max_students}}</td>
 						<td>{{ course.department}}</td>
-						<td>{{ course.theory_room_type}}</td>
-						<td>{{ course.practice_room_type}}</td>
-						<td>{{ course.etkin}}</td>
+						<td>{% if course.theory_room_type %}{{ course.theory_room_type}}{% endif %}</td>
+						<td>{% if course.practice_room_type %}{{ course.practice_room_type}}{% endif %}</td>
+						<td>{% if course.etkin == 0 %}
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                            {% else %}
+                            <i class="fa fa-check" aria-hidden="true"></i>
+                            {% endif %}
+                        </td>
 						<td>OK</td>
-						<td>{{ course.sube}}</td>
+						<td>{{ course.sube_type}}</td>
 
 						<td>
 							<a href="{% url 'secretariat:update_course' id=course.id %}" class="edit"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>

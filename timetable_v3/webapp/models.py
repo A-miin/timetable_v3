@@ -2,6 +2,15 @@ from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 
 
+SUBE_TYPE = [
+    (0, 'bölunmeyecek/birleştirilmeyecek'),
+    (1, 'bütün şübelere aynı hoca ve uygun olan sadece bir lab mevcut'),
+    (2, 'şubelere bölünecek, hepsine aynı hoca ama birden fazla lab mevcut'),
+    (3, 'şuberele bölünecek, her şübeye ayrı hoca ama uygun olan bir lab mevcut'),
+    (4, 'şubelere bölünecek, her şübeye ayrı hoca ve ayrı lab mevcut'),
+    (5, 'başka bölümün dersi ile birleşik verilecek (teori ve ugulama)'),
+    (6, 'başka bölümün dersi ile birleşik verilecek (teori)')
+]
 
 class Building(models.Model):
     name = models.CharField(max_length=255)
@@ -144,6 +153,10 @@ class Course(models.Model):
         if self.name == 'reserved':
             return 'reserved'
         return f'{self.code} {self.name}'
+
+    @property
+    def sube_type(self):
+        return SUBE_TYPE[self.sube][1]
 
     class Meta:
         db_table = 'course'

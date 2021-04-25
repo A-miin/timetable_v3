@@ -35,7 +35,7 @@ class ListClassRoomView(ListView):
         return context
 
     def get_queryset(self):
-        return ClassRoom.objects.filter(user_id=self.request.user.id)
+        return ClassRoom.objects.select_related('building', 'room_type', 'department').filter(user_id=self.request.user.id)
 
 
 class CreateClassRoomView(CreateView):
@@ -140,7 +140,7 @@ class ListGradeYearView(ListView):
 
     def get_queryset(self):
         faculty = self.request.user.faculty.faculty
-        return GradeYear.objects.filter(department__faculty_id=faculty.id)
+        return GradeYear.objects.select_related('department').filter(department__faculty_id=faculty.id)
 
 
 class CreateGradeYearView(CreateView):
@@ -192,7 +192,9 @@ class ListCourseView(ListView):
         return context
 
     def get_queryset(self):
-        return Course.objects.filter(user_id=self.request.user.id)
+        return Course.objects.select_related('teacher', 'department',
+                                             'practice_room_type', 'theory_room_type', 'type') \
+                   .filter(user_id=self.request.user.id)
 
 
 class CreateCourseView(CreateView):
@@ -244,7 +246,7 @@ class ListCourseVsRoomView(ListView):
         return context
 
     def get_queryset(self):
-        return CourseVsRoom.objects.filter(user_id=self.request.user.id)
+        return CourseVsRoom.objects.select_related('course', 'classroom', 'classroom__building').filter(user_id=self.request.user.id)
 
 
 class CreateCourseVsRoomView(CreateView):

@@ -1,6 +1,7 @@
 from django import forms
 
-from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear, Course, CourseVsRoom
+from webapp.models import ClassRoom, Building, Department, RoomType, Teacher, GradeYear, Course, CourseVsRoom, \
+    CourseType, SUBE_TYPE
 from django.contrib.auth.models import User
 
 
@@ -69,13 +70,34 @@ class GradeYearForm(forms.ModelForm):
         fields = ('department',
                   'grade')
 
+SEMESTER_TYPES = [
+    ('Güz', 'Güz'),
+    ('Bahar', 'Bahar')
+]
+
 
 class CourseForm(forms.ModelForm):
+    theory_hours = forms.IntegerField(label='Teorik ders saati')
+    practice_hours = forms.IntegerField(label='Uygulama ders saati')
+    credits = forms.IntegerField(label='Kredi')
+    max_students = forms.IntegerField(label='Max ogrenci sayisi')
+    code = forms.CharField(label='Ders kodu')
+    name = forms.CharField(label='Ders adi')
+    type = forms.ModelChoiceField(queryset=CourseType.objects.all(), label='Ders türü')
+    semester = forms.ChoiceField(choices=SEMESTER_TYPES, label='Dönem')
+    theory_room_type = forms.ModelChoiceField(queryset=RoomType.objects.all(), label='Teorik ders icin derslik tibi')
+    practice_room_type = forms.ModelChoiceField(queryset=RoomType.objects.all(), label='Uygulama ders icin derslik tibi')
+    sube = forms.ChoiceField(choices=SUBE_TYPE, label='Şübelere bölme yada birleştirme modu')
+    year = forms.IntegerField(label='Sinif')
+
     def __init__(self, user, *args, **kwargs):
         super(CourseForm, self).__init__(*args, **kwargs)
         self.fields['department'] = forms.ModelChoiceField(
             queryset=Department.objects.filter(faculty=user.faculty.faculty),
             label='Bölüm')
+        self.fields['teacher'] = forms.ModelChoiceField(
+            queryset=Teacher.objects.filter(user=user), label='Öğretmen'
+        )
         self.fields['user'] = forms.ModelChoiceField(queryset=User.objects.all(),
                                                      widget=forms.HiddenInput(attrs={'class': 'hideable'}))
         self.fields['user'].initial = user.id
@@ -96,15 +118,28 @@ class CourseForm(forms.ModelForm):
                   'etkin',
                   'sube',
                   'semester',
-                  'year')
+                  'year',
+                  'user')
 
+
+COURSE_VS_ROOM_TYPES = [
+    (0, 'Teorik'),
+    (1, 'Uygulama')
+]
 
 class CourseVsRoomForm(forms.ModelForm):
+    lesson_type = forms.ChoiceField(choices=COURSE_VS_ROOM_TYPES)
+
     def __init__(self, user, *args, **kwargs):
         super(CourseVsRoomForm, self).__init__(*args, **kwargs)
         self.fields['user'] = forms.ModelChoiceField(queryset=User.objects.all(),
                                                      widget=forms.HiddenInput(attrs={'class': 'hideable'}))
         self.fields['user'].initial = user.id
+        self.fields['course'] = forms.ModelChoiceField(queryset=Course.objects.filter(user=user),
+                                                       label='Ders')
+        self.fields['classroom'] = forms.ModelChoiceField(queryset=ClassRoom.objects.select_related('building').
+                                                          filter(user=user), label='Derslik')
+
 
     class Meta:
         model = CourseVsRoom

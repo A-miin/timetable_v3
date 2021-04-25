@@ -13,7 +13,7 @@
                 {{choice}}
             {% endfor %}
             {% elif field|field_type == 'booleanfield' %}
-            {{ field|add_class:"" }}
+            {{ field|add_class:"form-control"|remove_attr:"checked" }}
         {% else %}
             {{ field|add_class:"form-control" }}
         {% endif %}
