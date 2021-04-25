@@ -33,6 +33,13 @@
                 </div>
                 <div class="form-group">
                     <label for="department_id">Bölüm seçiniz</label>
+                    {% if has_error %}
+                        <small class="text-danger">
+                            <br>
+                            <span style="border-radius:55px;padding: 2px; background:#dc3545; color: white;">HATA</span>
+                            {{ has_error }}
+                        </small>
+                    {% endif %}
                     <select name="department" id="department_id" class="form-control">
                         <option value="none" selected>---------</option>
                         {% for department in departments %}
