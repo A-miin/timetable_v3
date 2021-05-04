@@ -3,26 +3,64 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
-
+from django.views.generic.base import View
 from django.urls import reverse
 
 from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm, CourseForm, CourseVsRoomForm
-from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom
-
+from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom, Building, TimeTable, TimeDay, TimeHour
+from webapp.views import ListTimeTable
+from django.db import models
+from django.db.models import Count, F, Q, Sum
 
 class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse('secretariat:timetable')
+        return reverse('secretariat:class_room_timetable')
 
 
 class CustomLogoutView(LogoutView):
     next_page = 'secretariat:login'
 
 
-class TimeTableView(TemplateView):
-    template_name = 'timetable.html'
+class ClassRoomTimeTableView(View):
+    template_name = 'classroom/timetable.html'
+
+    def get(self, request, *args, **kwargs):
+        building_short_names = Building.objects.order_by('short_name')
+        rooms = self.get_rooms()
+        return render(request, self.template_name, context={'rooms': rooms,'building_short_names':building_short_names })
+
+    def post(self, request, *args, **kwargs):
+
+        building_short_names = Building.objects.order_by('short_name')
+        room_id = self.request.POST.get('room', 0)
+        room = get_object_or_404(ClassRoom, id=room_id)
+        timetable = TimeTable.objects.select_related('classroom', 'classroom__building', 'course', 'course__teacher',
+                                                     'course__type', 'course__department', 'course__department__faculty',
+                                                     'classroom__building', ).\
+            filter(classroom=room).order_by('time_hour_id', 'time_day_id')
+        unused_courses = Course.objects.annotate(used_count=Count('timetable', distinct=True, )).\
+            annotate(max_used_count=F('practice_hours') +  F('theory_hours'),).filter(rooms__classroom_id=room.id).\
+            distinct()
+        days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
+        result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
+        for table in result:
+            while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
+                    timetable[index].time_day_id == table.time_day_id:
+                table.get_values(timetable[index])
+                index += 1
+        rooms = self.get_rooms()
+
+        return render(request, self.template_name, context={'rooms': rooms, 'timetable': result,
+                                                            'selected_room': room,'selected_building_short': room.building.short_name,
+                                                            'days': days, 'hours': hours, 'building_short_names':building_short_names,
+                                                            'unused_courses': unused_courses})
+
+    def get_rooms(self):
+        return ClassRoom.objects.select_related('building').all().order_by('building__short_name')
+
+
 
 
 class ListClassRoomView(ListView):

@@ -205,6 +205,7 @@ class Editor(models.Model):
     old_time = models.IntegerField(db_column='oldtime', null=True)
     new_time = models.IntegerField(db_column='new_time', null=True)
     department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, null=True, blank=True)
+
     class Meta:
         db_table = 'editor'
 

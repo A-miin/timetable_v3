@@ -1,0 +1,154 @@
+{% extends 'secretariat-base.html' %}
+{% load custom_tags %}
+{% block content %}
+    <div class=".container-fluid">
+    <div class="row justify-content-md-center">
+        <div class="col-md-6">
+    <h3>Derslikler Bazında Plan</h3>
+            <hr>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="department_id">Bina</label>
+                    <select onchange="val()" name="room_bina" id="room_shortName" class="form-control">
+                        {% for building_short_name in building_short_names %}
+                            {% if building_short_name.short_name == selected_building_short %}
+                        <option  value="{{ building_short_name.short_name }}" selected>{{ building_short_name.short_name }}</option>
+                            {% else %}
+                            <option value="{{  building_short_name.short_name }}">{{  building_short_name.short_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="department_id">Derslik seçiniz</label>
+                    <select name="room" id="room_id" class="form-control">
+                        {% for room in rooms %}
+                            {% if room.id == selected_room.id %}
+                        <option data-building="{{room.building.short_name}}" value="{{ room.id }}" selected>{{ room }}</option>
+                            {% else %}
+                            <option data-building="{{room.building.short_name}}" value="{{ room.id }}">{{ room }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            <input type="submit" value="Göster" class="btn btn-info btn-block">
+            </form>
+
+        {% if timetable %}
+            <table><thead><tr><td><h4>Ders Planında Renklerin Anlamı</h4></td></tr></thead>
+                <tbody>
+                    <tr class="table-primary"><td>Ortak dersler</td></tr>
+                    <tr class="table-success"><td>Zorunlu Dersler</td></tr>
+                    <tr class="table-warning"><td>Seçmeli Dersler</td></tr>
+                    <tr class="table-secondary"><td>Bolum Dışı Seçmeli Dersler</td></tr>'
+                </tbody></table>
+        {% endif %}
+
+    </div>
+        <h2>Bu derslikte gece bilener dersler</h2>
+    <div class="row container mt-2">
+        {% for course in unused_courses %}
+        <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}">
+
+            {{ course.name }}<br>
+        {{ course.code }}<br>
+        {{ course.teacher }}<br>
+        {{ course.department }}<br>
+            <div class="counts">
+        {{ course.used_count }}/{{ course.max_used_count }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if timetable %}
+        {% include 'partial/secretariat_classroom_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
+    {% endif %}
+</div>
+</div>
+<script>
+function val() {
+    first = false;
+    d = document.getElementById("room_shortName").value;
+    rooms  = document.getElementById('room_id')
+    var myOpts =  rooms.options;
+    for (var i = 0;  i < myOpts.length; i++)
+    {
+        if (myOpts[i].getAttribute("data-building")!==d){
+            myOpts[i].style.display='None';
+        }
+        else {
+            myOpts[i].style.display = 'block';
+            if (first==false){
+                rooms.value = myOpts[i].value;
+                first=true;
+            }
+        }
+    }
+}
+
+</script>
+    <script>
+    $(".exist").draggable(
+
+      { revert: 'invalid'}
+    );
+    $(".parent-draggable").draggable(
+      {revert: 'invalid'}
+    )
+
+
+    $(".droppable").droppable({
+        accept: function(draggable) {
+            return true;
+        },
+
+        drop: function (event, ui){
+        previous = $(ui.draggable[0])
+        new_item = previous.clone();
+        if ($(previous.parent()).prop("tagName") === "TD"){
+        $(previous.parent().droppable('enable'));
+
+        console.log(previous.data('course-id'))
+        console.log($(previous.parent()).data('id'))
+        $(ui.draggable[0]).remove();
+
+        }
+        else {
+            previous.css({"top": "0px", "left": "0px", "position": "relative"})
+            new_item.find(".counts")[0].remove();
+            new_item.append('<a class="delete" href="#">X</a>')
+        }
+        $(new_item.children()).on("click",function(e) {
+              e.preventDefault();
+              $(this.closest('td')).droppable('enable');
+
+              console.log($(this).parent().data('course-id'));
+              console.log($(this).parent().parent().data('id'))
+              $(this).parent().remove();
+
+        });
+
+        new_item.css({"top": "0px", "left": "0px", "position": "relative"})
+        new_item.draggable({revert: 'invalid'});
+
+        console.log(previous.data('course-id'))
+        $(this).append(new_item);
+        console.log(new_item.parent().data('id'))
+        $(this).droppable('disable');
+        },
+        activeClass: "highlight"
+    });
+
+        $('.droppable').droppable('disable');
+        $('.not_exist').droppable('enable');
+        $(".delete").on("click",function(e) {
+              e.preventDefault();
+              $(this.closest('td')).droppable('enable');
+              console.log($(this).parent().data('course-id'));
+              console.log($(this).parent().parent().data('id'));
+              $(this).parent().remove();
+
+});
+</script>
+{% endblock %}

@@ -14,7 +14,9 @@ def home(request):
 
 
 class ListTimeTable(object):
-    def __init__(self, time_day_id, time_hour_id, course=None, classroom=None,course_type=None, teacher=None, department=None, faculty=None):
+    def __init__(self, time_day_id, time_hour_id, course=None, classroom=None,course_type=None,
+                 teacher=None, department=None, faculty=None, course_id=None):
+        self.course_id = course_id
         self.course = course
         self.classroom = classroom
         self.teacher = teacher
@@ -31,6 +33,7 @@ class ListTimeTable(object):
         if self.classroom is None:
             self.course = table.course.full_name
             self.course_type = table.course.type.type_code
+            self.course_id = table.course_id
             if self.course_type != 5:
                 self.teacher = table.course.teacher.name
                 self.classroom = table.classroom.short_name
