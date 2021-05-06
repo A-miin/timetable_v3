@@ -342,8 +342,8 @@ class TimeHour(models.Model):
 
 
 class TimeTable(models.Model):
-    course = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True)
-    classroom = models.ForeignKey(to=ClassRoom, on_delete=models.SET_NULL, null=True, blank=True)
+    course = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=True, blank=True)
+    classroom = models.ForeignKey(to=ClassRoom, on_delete=models.CASCADE, null=True, blank=True)
     time_day = models.ForeignKey(to=TimeDay, on_delete=models.SET_NULL, null=True, blank=True)
     time_hour = models.ForeignKey(to=TimeHour, on_delete=models.SET_NULL, null=True, blank=True)
     year = models.IntegerField(db_column='yil', null=True)
