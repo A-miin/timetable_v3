@@ -1,6 +1,10 @@
+import json
 
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView, LogoutView
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 from django.views.generic.base import View
@@ -61,6 +65,44 @@ class ClassRoomTimeTableView(View):
         return ClassRoom.objects.select_related('building').all().order_by('building__short_name')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class TimeTableActionsView(View):
+
+    @staticmethod
+    def get_time_day_objects(time_hour_day):
+        day, hour = time_hour_day % 5, time_hour_day // 5
+        day += 1
+        hour += 1
+        day = TimeDay.objects.get(id=day)
+        hour = TimeHour.objects.get(id=hour)
+        return day, hour
+
+    def post(self, request, *args, **kwargs):
+        response = {'message': 'ok'}
+        data = json.loads(request.body)
+        action_type = data['action_type']
+        handler_method = getattr(self, action_type, '')
+        handler_method(data['data']) if handler_method else None
+        return JsonResponse(response)
+
+    def action_delete(self, data):
+        course_id, time_hour_day, classroom_id = data['course_id'], data['time_hour_day'], data['classroom_id']
+        day, hour = self.get_time_day_objects(time_hour_day=time_hour_day)
+        TimeTable.objects.filter(course_id=course_id, time_day=day, time_hour=hour).delete()
+
+    def action_move(self, data):
+        course_id, old_time_hour_day, new_old_hour_day, classroom_id = \
+            data['course_id'], data['old_time_hour_day'], data['new_time_hour_day'], data['classroom_id']
+        old_day, old_hour = self.get_time_day_objects(time_hour_day=old_time_hour_day)
+        new_day, new_hour = self.get_time_day_objects(time_hour_day=new_old_hour_day)
+        TimeTable.objects.filter(classroom_id=classroom_id, time_day=old_day, time_hour=old_hour, course_id=course_id)\
+            .update(time_day=new_day, time_hour=new_hour)
+
+    def action_create(self, data):
+        course_id, time_hour_day, classroom_id = data['course_id'], data['time_hour_day'], data['classroom_id']
+        day, hour = self.get_time_day_objects(time_hour_day=time_hour_day)
+        if not TimeTable.objects.filter(classroom_id=classroom_id, time_day=day, time_hour=hour).exists():
+            TimeTable.objects.create(classroom_id=classroom_id, time_day=day, time_hour=hour, course_id=course_id)
 
 
 class ListClassRoomView(ListView):

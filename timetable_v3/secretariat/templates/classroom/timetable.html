@@ -49,7 +49,7 @@
         <h2>Bu derslikte gece bilener dersler</h2>
     <div class="row container mt-2">
         {% for course in unused_courses %}
-        <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}">
+        <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}" data-not-acceptable="[5, 10]">
 
             {{ course.name }}<br>
         {{ course.code }}<br>
@@ -89,6 +89,20 @@ function val() {
 
 </script>
     <script>
+    function send_request(data){
+        fetch('http://localhost:8000/secretariat/api/timetable/', {
+  method: 'POST', // or 'PUT'
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(data),
+})
+.then(response => response.json())
+.then(data => {
+})
+.catch((error) => {
+});
+    }
     $(".exist").draggable(
 
       { revert: 'invalid'}
@@ -100,6 +114,11 @@ function val() {
 
     $(".droppable").droppable({
         accept: function(draggable) {
+            item = $(draggable);
+            not_accaptable = item.data('not-acceptable');
+            id = $(this).data('id');
+            if (not_accaptable.includes(id))
+                return false
             return true;
         },
 
@@ -111,6 +130,16 @@ function val() {
 
         console.log(previous.data('course-id'))
         console.log($(previous.parent()).data('id'))
+            console.log($(this).data('id'));
+        let course_id = previous.data('course-id');
+        let old_time_hour_day = $(previous.parent()).data('id');
+        let new_time_hour_day = $(this).data('id');
+        let classroom_id = $( "#room_id" ).val();
+              data = {'action_type': 'action_move',
+                  'data': {'course_id': course_id, 'old_time_hour_day': old_time_hour_day,
+                      'new_time_hour_day': new_time_hour_day, 'classroom_id': classroom_id}
+              }
+              send_request(data);
         $(ui.draggable[0]).remove();
 
         }
@@ -118,13 +147,24 @@ function val() {
             previous.css({"top": "0px", "left": "0px", "position": "relative"})
             new_item.find(".counts")[0].remove();
             new_item.append('<a class="delete" href="#">X</a>')
+            let course_id = previous.data('course-id');
+            let time_hour_day = $(this).data('id');
+            let classroom_id = $( "#room_id" ).val();
+              data = {'action_type': 'action_create',
+                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+              }
+              send_request(data)
         }
         $(new_item.children()).on("click",function(e) {
               e.preventDefault();
               $(this.closest('td')).droppable('enable');
-
-              console.log($(this).parent().data('course-id'));
-              console.log($(this).parent().parent().data('id'))
+              let course_id = $(this).parent().data('course-id');
+              let time_hour_day = $(this).parent().parent().data('id');
+              let classroom_id = $( "#room_id" ).val();
+              data = {'action_type': 'action_delete',
+                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+              }
+              send_request(data);
               $(this).parent().remove();
 
         });
@@ -132,9 +172,7 @@ function val() {
         new_item.css({"top": "0px", "left": "0px", "position": "relative"})
         new_item.draggable({revert: 'invalid'});
 
-        console.log(previous.data('course-id'))
         $(this).append(new_item);
-        console.log(new_item.parent().data('id'))
         $(this).droppable('disable');
         },
         activeClass: "highlight"
@@ -145,8 +183,13 @@ function val() {
         $(".delete").on("click",function(e) {
               e.preventDefault();
               $(this.closest('td')).droppable('enable');
-              console.log($(this).parent().data('course-id'));
-              console.log($(this).parent().parent().data('id'));
+              let course_id = $(this).parent().data('course-id');
+              let time_hour_day = $(this).parent().parent().data('id');
+              let classroom_id = $( "#room_id" ).val();
+              data = {'action_type': 'action_delete',
+                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+              }
+              send_request(data);
               $(this).parent().remove();
 
 });

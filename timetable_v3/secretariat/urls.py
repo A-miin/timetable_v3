@@ -1,10 +1,11 @@
 from django.urls import path
 
-from secretariat.views import ClassRoomTimeTableView, CustomLoginView, CustomLogoutView, ListClassRoomView, CreateClassRoomView, \
+from secretariat.views import ClassRoomTimeTableView, CustomLoginView, CustomLogoutView, ListClassRoomView, \
+    CreateClassRoomView, \
     UpdateClassRoomView, DeleteClassRoomView, ListTeacherView, CreateTeacherView, UpdateTeacherView, DeleteTeacherView, \
     ListGradeYearView, CreateGradeYearView, UpdateGradeYearView, DeleteGradeYearView, ListCourseView, CreateCourseView, \
     UpdateCourseView, DeleteCourseView, ListCourseVsRoomView, DeleteCourseVsRoomView, UpdateCourseVsRoomView, \
-    CreateCourseVsRoomView
+    CreateCourseVsRoomView, TimeTableActionsView
 
 app_name = 'secretariat'
 
@@ -12,6 +13,7 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('timetable/', ClassRoomTimeTableView.as_view(), name='class_room_timetable'),
+    path('api/timetable/', TimeTableActionsView.as_view(), name='api_timetable'),
     path('classrooms/', ListClassRoomView.as_view(), name='list_class_room'),
     path('classroom/create/', CreateClassRoomView.as_view(), name='create_class_room'),
     path('classroom/update/<int:id>/', UpdateClassRoomView.as_view(), name='update_class_room'),
