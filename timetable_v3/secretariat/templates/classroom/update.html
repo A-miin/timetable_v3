@@ -1,6 +1,50 @@
 {%  extends 'secretariat-base.html' %}
 {% block content %}
     <form action="" method="POST">
+
     {% include 'partial/form.html' with form=form action_text="Derslik duzenle" %}
+    <h3 class="text-center mb-5">Reserved</h3>
+    <div class="row mt-5 ml-5 mb-5">
+    {% for table in reserved_timetable %}
+        <div class="col-2">
+
+        <input type="checkbox" data-day-id="{{ table.day.id }}" data-hour-id="{{ table.hour.id }}" id="time_{{ table.day.id }}_{{ table.hour.id }}" name="reserved" {% if table.reserved  %} checked {% endif %}>
+<label for="time_{{ table.day.id }}_{{ table.hour.id }}">
+        {{ table.day.label }}
+        {{ table.hour.label }}
+</label><br>
+        </div>
+        {% if forloop.counter|divisibleby:"5" %}
+            <div class="col-2"></div>
+        {% endif %}
+    {% endfor %}
+    </div>
     </form>
+    <script>
+     function send_request(data) {
+         fetch('http://localhost:8000/secretariat/api/classroom/reserve/', {
+             method: 'POST', // or 'PUT'
+             headers: {
+                 'Content-Type': 'application/json',
+             },
+             body: JSON.stringify(data),
+         })
+             .then(response => response.json())
+             .then(data => {
+             })
+             .catch((error) => {
+             });
+     }
+    $("[name=reserved]").click(function (event){
+        let day = $(this).data('day-id');
+        let hour = $(this).data('hour-id');
+
+        if (this.checked)
+            data = {'action_type': 'action_create', 'data': {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}}
+
+        else
+            data = {'action_type': 'action_delete', 'data': {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}}
+        send_request(data);
+    });
+    </script>
 {% endblock %}

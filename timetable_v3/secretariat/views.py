@@ -131,9 +131,35 @@ class CreateClassRoomView(CreateView):
         return reverse('secretariat:list_class_room')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class ReserveClassRoomView(View):
+    def post(self, request, *args, **kwargs):
+        response = {'message': 'ok'}
+        data = json.loads(request.body)
+        action_type = data['action_type']
+        handler_method = getattr(self, action_type, '')
+        handler_method(data['data']) if handler_method else None
+        return JsonResponse(response)
+
+    def action_delete(self, data):
+        day_id, hour_id, classroom_id = data['day_id'], data['hour_id'], data['classroom_id']
+        classroom = get_object_or_404(ClassRoom, id=classroom_id)
+        classroom.delete_reserved(day_id=day_id, hour_id=hour_id)
+
+    def action_create(self, data):
+        day_id, hour_id, classroom_id = data['day_id'], data['hour_id'], data['classroom_id']
+        classroom = get_object_or_404(ClassRoom, id=classroom_id)
+        classroom.create_reserved(day_id=day_id, hour_id=hour_id)
+
+
 class UpdateClassRoomView(UpdateView):
     form_class = ClassRoomForm
     template_name = 'classroom/update.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateClassRoomView, self).get_context_data(**kwargs)
+        context['reserved_timetable'] = self.object.list_reserved()
+        return context
 
     def get_object(self, queryset=None):
         return get_object_or_404(ClassRoom, id=self.kwargs.get('id', 0))

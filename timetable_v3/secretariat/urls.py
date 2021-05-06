@@ -5,7 +5,7 @@ from secretariat.views import ClassRoomTimeTableView, CustomLoginView, CustomLog
     UpdateClassRoomView, DeleteClassRoomView, ListTeacherView, CreateTeacherView, UpdateTeacherView, DeleteTeacherView, \
     ListGradeYearView, CreateGradeYearView, UpdateGradeYearView, DeleteGradeYearView, ListCourseView, CreateCourseView, \
     UpdateCourseView, DeleteCourseView, ListCourseVsRoomView, DeleteCourseVsRoomView, UpdateCourseVsRoomView, \
-    CreateCourseVsRoomView, TimeTableActionsView
+    CreateCourseVsRoomView, TimeTableActionsView, ReserveClassRoomView
 
 app_name = 'secretariat'
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path('classroom/create/', CreateClassRoomView.as_view(), name='create_class_room'),
     path('classroom/update/<int:id>/', UpdateClassRoomView.as_view(), name='update_class_room'),
     path('classroom/delete/<int:id>/', DeleteClassRoomView.as_view(), name='delete_class_room'),
+    path('api/classroom/reserve/', ReserveClassRoomView.as_view(), name='reserve_classroom'),
     path('teachers/', ListTeacherView.as_view(), name='list_teacher'),
     path('teacher/create/', CreateTeacherView.as_view(), name='create_teacher'),
     path('teacher/update/<int:id>/', UpdateTeacherView.as_view(), name='update_teacher'),

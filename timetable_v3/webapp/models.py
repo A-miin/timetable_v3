@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User, AbstractUser
-from django.db import models
-
+from django.db import models, transaction
 
 SUBE_TYPE = [
     (0, 'bölunmeyecek/birleştirilmeyecek'),
@@ -11,6 +10,8 @@ SUBE_TYPE = [
     (5, 'başka bölümün dersi ile birleşik verilecek (teori ve ugulama)'),
     (6, 'başka bölümün dersi ile birleşik verilecek (teori)')
 ]
+TIMETABLE_RESERVED = 'reserved'
+
 
 class Building(models.Model):
     name = models.CharField(max_length=255)
@@ -87,6 +88,13 @@ class Teacher(models.Model):
         db_table = 'teacher'
 
 
+class ReservedTimeTable:
+    def __init__(self, day, hour, reserved):
+        self.day = day
+        self.hour = hour
+        self.reserved = reserved
+
+
 class ClassRoom(models.Model):
     building = models.ForeignKey(to=Building, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
     department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
@@ -109,6 +117,32 @@ class ClassRoom(models.Model):
         if self.building:
             return f'{self.building.short_name} - {self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
         return self.name
+
+    @transaction.atomic
+    def create_reserved(self, day_id, hour_id):
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        TimeTable.objects.get_or_create(time_day_id=day_id, time_hour_id=hour_id, classroom=self, course=reserved_course)
+
+
+    @transaction.atomic
+    def delete_reserved(self, day_id, hour_id):
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        TimeTable.objects.filter(time_day=day_id, time_hour_id=hour_id, classroom=self, course=reserved_course).delete()
+
+    def list_reserved(self):
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_timetable = self.timetable_set.filter(course=reserved_course).order_by('time_day_id', 'time_hour_id')
+        result_timetable = [ReservedTimeTable(day=day, hour=hour, reserved=False)  for hour in
+                                   TimeHour.objects.all().order_by('id') for day in
+                                   TimeDay.objects.all().order_by('id')]
+        if reserved_timetable:
+            for timetable in result_timetable:
+                for reserved in reserved_timetable:
+                    if timetable.day == reserved.time_day and timetable.hour == reserved.time_hour:
+                        timetable.reserved = True
+                        break
+        return result_timetable
+
 
     class Meta:
         db_table = 'classroom'
@@ -243,3 +277,12 @@ class TimeTable(models.Model):
 
     class Meta:
         db_table = 'timeTable'
+
+    @staticmethod
+    def get_time_day_objects(time_hour_day):
+        day, hour = time_hour_day % 5, time_hour_day // 5
+        day += 1
+        hour += 1
+        day = TimeDay.objects.get(id=day)
+        hour = TimeHour.objects.get(id=hour)
+        return day, hour
