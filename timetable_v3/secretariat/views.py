@@ -213,6 +213,11 @@ class UpdateTeacherView(UpdateView):
     form_class = TeacherForm
     template_name = 'teacher/update.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(UpdateTeacherView, self).get_context_data(**kwargs)
+        context['reserved_timetable'] = self.object.list_reserved()
+        return context
+
     def get_object(self, queryset=None):
         return get_object_or_404(Teacher, id=self.kwargs.get('id', 0))
 
@@ -223,6 +228,27 @@ class UpdateTeacherView(UpdateView):
 
     def get_success_url(self):
         return reverse('secretariat:list_teacher')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReserveTeacherView(View):
+    def post(self, request, *args, **kwargs):
+        response = {'message': 'ok'}
+        data = json.loads(request.body)
+        action_type = data['action_type']
+        handler_method = getattr(self, action_type, '')
+        handler_method(data['data']) if handler_method else None
+        return JsonResponse(response)
+
+    def action_delete(self, data):
+        day_id, hour_id, teacher_id = data['day_id'], data['hour_id'], data['teacher_id']
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        teacher.delete_reserved(day_id=day_id, hour_id=hour_id)
+
+    def action_create(self, data):
+        day_id, hour_id, teacher_id = data['day_id'], data['hour_id'], data['teacher_id']
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        teacher.create_reserved(day_id=day_id, hour_id=hour_id)
 
 
 class DeleteTeacherView(DeleteView):
