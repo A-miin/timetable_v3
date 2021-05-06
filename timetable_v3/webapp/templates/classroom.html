@@ -32,6 +32,13 @@
                 </div>
                 <div class="form-group">
                     <label for="department_id">Derslik seçiniz</label>
+                    {% if has_error %}
+                        <small class="text-danger">
+                            <br>
+                            <span style="border-radius:55px;padding: 2px; background:#dc3545; color: white;">HATA</span>
+                            {{ has_error }}
+                        </small>
+                    {% endif %}
                     <select name="room" id="room_id" class="form-control">
                         {% for room in rooms %}
                             {% if room.id == selected_room.id %}

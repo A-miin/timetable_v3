@@ -17,11 +17,17 @@
 
 
             <hr>
-
             <form method="post">
             {% csrf_token %}
                 <div class="form-group">
                     <label for="teacher_id">Öğretmen seçiniz</label>
+                    {% if has_error %}
+                        <small class="text-danger">
+                            <br>
+                            <span style="border-radius:55px;padding: 2px; background:#dc3545; color: white;">HATA</span>
+                            {{ has_error }}
+                        </small>
+                    {% endif %}
                     <select name="teacher" id="teacher_id" class="form-control">
                         {% for teacher in teachers %}
                             {% if teacher.id == selected_teacher.id %}
