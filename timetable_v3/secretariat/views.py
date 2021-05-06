@@ -11,7 +11,8 @@ from django.views.generic.base import View
 from django.urls import reverse
 
 from secretariat.forms import ClassRoomForm, TeacherForm, GradeYearForm, CourseForm, CourseVsRoomForm
-from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom, Building, TimeTable, TimeDay, TimeHour
+from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom, Building, TimeTable, TimeDay, TimeHour, \
+    TIMETABLE_RESERVED
 from webapp.views import ListTimeTable
 from django.db import models
 from django.db.models import Count, F, Q, Sum
@@ -54,15 +55,18 @@ class ClassRoomTimeTableView(View):
                     timetable[index].time_day_id == table.time_day_id:
                 table.get_values(timetable[index])
                 index += 1
+        for table in result:
+            print(table.time_day_id, table.time_hour_id, table.course)
         rooms = self.get_rooms()
-
+        reserved_cells = room.timetable_reserved()
+        print(reserved_cells)
         return render(request, self.template_name, context={'rooms': rooms, 'timetable': result,
                                                             'selected_room': room,'selected_building_short': room.building.short_name,
                                                             'days': days, 'hours': hours, 'building_short_names':building_short_names,
                                                             'unused_courses': unused_courses})
 
     def get_rooms(self):
-        return ClassRoom.objects.select_related('building').all().order_by('building__short_name')
+        return ClassRoom.objects.select_related('building').exclude(name=TIMETABLE_RESERVED).order_by('building__short_name')
 
 
 @method_decorator(csrf_exempt, name='dispatch')

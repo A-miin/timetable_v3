@@ -6,7 +6,8 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.base import View
 
-from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building, Faculty
+from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building, Faculty, \
+    TIMETABLE_RESERVED
 
 
 def home(request):
@@ -30,19 +31,22 @@ class ListTimeTable(object):
         return self.classroom is None
 
     def get_values(self, table: TimeTable):
-        if self.classroom is None:
-            self.course = table.course.full_name
-            self.course_type = table.course.type.type_code
-            self.course_id = table.course_id
-            if self.course_type != 5:
-                self.teacher = table.course.teacher.name
-                self.classroom = table.classroom.short_name
-                self.department = table.course.department.name
-                self.faculty = table.course.department.faculty.name
+        if self.course:
+            if self.classroom is None :
+                self.course = table.course.full_name
+                self.course_type = table.course.type.type_code
+                self.course_id = table.course_id
+                if self.course_type != 5:
+                    self.teacher = table.course.teacher.name
+                    self.classroom = table.classroom.short_name
+                    self.department = table.course.department.name
+                    self.faculty = table.course.department.faculty.name
+            else:
+
+                self.classroom += f', {table.classroom.short_name}'
         else:
-
-            self.classroom += f', {table.classroom.short_name}'
-
+            self.course = 'reserved'
+            self.course_type = 5
 
 
 class TeacherTimeTableView(View):
@@ -74,7 +78,7 @@ class TeacherTimeTableView(View):
                                                             'days': days, 'hours': hours, 'teacher_code':teacher_code})
 
     def get_queryset(self):
-        return Teacher.objects.all().order_by('name')
+        return Teacher.objects.exclude(name=TIMETABLE_RESERVED).order_by('name')
 
 class DepartmentView(View):
     template_name = 'department.html'
@@ -155,4 +159,4 @@ class RoomView(View):
                                                             'days': days, 'hours': hours, 'building_short_names':building_short_names})
 
     def get_rooms(self):
-        return ClassRoom.objects.all().order_by('building__short_name')
+        return ClassRoom.objects.exclude(name=TIMETABLE_RESERVED).order_by('building__short_name')

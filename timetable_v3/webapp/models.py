@@ -133,6 +133,7 @@ class ClassRoom(models.Model):
     capacity = models.IntegerField(null=True, blank=True)
     room_type = models.ForeignKey(to=RoomType, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True, db_column='roomType_id')
 
+
     def __str__(self):
         return f'{self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
 
@@ -172,6 +173,11 @@ class ClassRoom(models.Model):
                         timetable.reserved = True
                         break
         return result_timetable
+
+    def timetable_reserved(self):
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_timetable = TimeTable.objects.filter(course=reserved_course, classroom=self)
+        return [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour) for table in reserved_timetable]
 
 
     class Meta:
@@ -354,3 +360,9 @@ class TimeTable(models.Model):
         day = TimeDay.objects.get(id=day)
         hour = TimeHour.objects.get(id=hour)
         return day, hour
+
+    @staticmethod
+    def get_time_hour_day(day, hour):
+        day, hour = day.id-1, hour.id - 1
+        time_hour_day = day + (5 * hour)
+        return time_hour_day
