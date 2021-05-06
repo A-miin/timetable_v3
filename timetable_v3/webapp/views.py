@@ -31,7 +31,7 @@ class ListTimeTable(object):
         return self.classroom is None
 
     def get_values(self, table: TimeTable):
-        if self.course:
+        if table.course.name != TIMETABLE_RESERVED:
             if self.classroom is None :
                 self.course = table.course.full_name
                 self.course_type = table.course.type.type_code
