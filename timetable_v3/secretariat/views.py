@@ -288,9 +288,35 @@ class CreateGradeYearView(CreateView):
         return reverse('secretariat:list_grade_year')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class ReserveGradeYearView(View):
+    def post(self, request, *args, **kwargs):
+        response = {'message': 'ok'}
+        data = json.loads(request.body)
+        action_type = data['action_type']
+        handler_method = getattr(self, action_type, '')
+        handler_method(data['data']) if handler_method else None
+        return JsonResponse(response)
+
+    def action_delete(self, data):
+        day_id, hour_id, grade_year_id = data['day_id'], data['hour_id'], data['grade_year_id']
+        grade_year = get_object_or_404(GradeYear, id=grade_year_id)
+        grade_year.delete_reserved(day_id=day_id, hour_id=hour_id)
+
+    def action_create(self, data):
+        day_id, hour_id, grade_year_id = data['day_id'], data['hour_id'], data['grade_year_id']
+        grade_year = get_object_or_404(GradeYear, id=grade_year_id)
+        grade_year.create_reserved(day_id=day_id, hour_id=hour_id)
+
+
 class UpdateGradeYearView(UpdateView):
     form_class = GradeYearForm
     template_name = 'grade_year/update.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateGradeYearView, self).get_context_data(**kwargs)
+        context['reserved_timetable'] = self.object.list_reserved()
+        return context
 
     def get_object(self, queryset=None):
         return get_object_or_404(GradeYear, id=self.kwargs.get('id', 0))

@@ -247,6 +247,44 @@ class GradeYear(models.Model):
 
     def __str__(self):
         return f'{self.department.name} -> {self.grade}'
+
+    @transaction.atomic
+    def create_reserved(self, day_id, hour_id):
+        reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=reserved_teacher,
+                                                       department=self.department, year=self.grade)[0]
+        reserved_classroom = ClassRoom.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        TimeTable.objects.get_or_create(time_day_id=day_id, time_hour_id=hour_id, classroom=reserved_classroom,
+                                        course=reserved_course)
+
+    @transaction.atomic
+    def delete_reserved(self, day_id, hour_id):
+        reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=reserved_teacher,
+                                                       department=self.department, year=self.grade)[0]
+        reserved_classroom = ClassRoom.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        TimeTable.objects.filter(time_day=day_id, time_hour_id=hour_id, classroom=reserved_classroom,
+                                 course=reserved_course).delete()
+
+    def list_reserved(self):
+        reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=reserved_teacher,
+                                                       department=self.department, year=self.grade)[0]
+        reserved_classroom = ClassRoom.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_timetable = TimeTable.objects.filter(course=reserved_course, classroom=reserved_classroom). \
+            order_by('time_day_id', 'time_hour_id')
+        result_timetable = [ReservedTimeTable(day=day, hour=hour, reserved=False) for hour in
+                            TimeHour.objects.all().order_by('id') for day in
+                            TimeDay.objects.all().order_by('id')]
+        if reserved_timetable:
+            for timetable in result_timetable:
+                for reserved in reserved_timetable:
+                    if timetable.day == reserved.time_day and timetable.hour == reserved.time_hour:
+                        timetable.reserved = True
+                        break
+        return result_timetable
+
+
     class Meta:
         db_table = 'grade_year'
 
