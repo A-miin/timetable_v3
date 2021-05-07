@@ -151,17 +151,17 @@ class ClassRoom(models.Model):
 
     @transaction.atomic
     def create_reserved(self, day_id, hour_id):
-        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=None)[0]
         TimeTable.objects.get_or_create(time_day_id=day_id, time_hour_id=hour_id, classroom=self, course=reserved_course)
 
 
     @transaction.atomic
     def delete_reserved(self, day_id, hour_id):
-        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=None)[0]
         TimeTable.objects.filter(time_day=day_id, time_hour_id=hour_id, classroom=self, course=reserved_course).delete()
 
     def list_reserved(self):
-        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=None)[0]
         reserved_timetable = self.timetable_set.filter(course=reserved_course).order_by('time_day_id', 'time_hour_id')
         result_timetable = [ReservedTimeTable(day=day, hour=hour, reserved=False)  for hour in
                                    TimeHour.objects.all().order_by('id') for day in
@@ -175,7 +175,7 @@ class ClassRoom(models.Model):
         return result_timetable
 
     def timetable_reserved(self):
-        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=None)[0]
         reserved_timetable = TimeTable.objects.filter(course=reserved_course, classroom=self)
         return [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour) for table in reserved_timetable]
 
@@ -215,6 +215,23 @@ class Course(models.Model):
     unpositioned_practice_hours = models.IntegerField(db_column='unpositionedUygulamaHours', null=True, blank=True)
     semester = models.CharField(max_length=255, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
+
+    def get_reserved_list(self):
+        reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_grade_year_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=reserved_teacher,
+                                                       department=self.department, year=self.year)[0]
+        reserved_classroom = ClassRoom.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        reserved_grade_year_timetable = [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour)
+                                         for table in TimeTable.objects.
+                                             filter(course=reserved_grade_year_course, classroom=reserved_classroom)]
+
+        reserved_teacher_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=self.teacher)[0]
+        reserved_teacher_timetable =  [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour)
+                                         for table in TimeTable.objects.
+                                             filter(course=reserved_teacher_course, classroom=reserved_classroom)]
+        ids = list(set((reserved_grade_year_timetable + reserved_teacher_timetable)))
+        import json
+        return json.dumps(ids)
 
     def __str__(self):
         return self.name

@@ -16,7 +16,7 @@ def home(request):
 
 class ListTimeTable(object):
     def __init__(self, time_day_id, time_hour_id, course=None, classroom=None,course_type=None,
-                 teacher=None, department=None, faculty=None, course_id=None):
+                 teacher=None, department=None, faculty=None, course_id=None, reserved_list=None):
         self.course_id = course_id
         self.course = course
         self.classroom = classroom
@@ -26,6 +26,7 @@ class ListTimeTable(object):
         self.faculty = faculty
         self.time_day_id = time_day_id
         self.time_hour_id = time_hour_id
+        self.reserved_list = reserved_list
 
     def is_empty(self):
         return self.classroom is None
@@ -36,6 +37,7 @@ class ListTimeTable(object):
                 self.course = table.course.full_name
                 self.course_type = table.course.type.type_code
                 self.course_id = table.course_id
+                self.reserved_list = table.course.get_reserved_list()
                 if self.course_type != 5:
                     self.teacher = table.course.teacher.name
                     self.classroom = table.classroom.short_name
@@ -84,7 +86,7 @@ class TeacherTimeTableView(View):
             context['has_error']=has_error
             context['teachers']=queryset
 
-        return render(request, self.template_name, context=context )
+        return render(request, self.template_name, context=context)
 
     def get_queryset(self):
         return Teacher.objects.exclude(name=TIMETABLE_RESERVED).order_by('name')

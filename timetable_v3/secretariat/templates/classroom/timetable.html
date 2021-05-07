@@ -49,7 +49,7 @@
         <h2>Bu derslikte gece bilener dersler</h2>
     <div class="row container mt-2">
         {% for course in unused_courses %}
-        <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}" data-not-acceptable="[5, 10]">
+        <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}" data-not-acceptable="{{ course.get_reserved_list }}">
 
             {{ course.name }}<br>
         {{ course.code }}<br>
