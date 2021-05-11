@@ -45,8 +45,8 @@ class ClassRoomTimeTableView(View):
                                                      'course__type', 'course__department', 'course__department__faculty',
                                                      'classroom__building', ).\
             filter(classroom=room).order_by('time_hour_id', 'time_day_id')
-        unused_courses = Course.objects.annotate(used_count=Count('timetable', distinct=True, )).\
-            annotate(max_used_count=F('practice_hours') +  F('theory_hours'),).filter(rooms__classroom_id=room.id).\
+        unused_courses = Course.objects.select_related('teacher', 'department', 'type').annotate(used_count=Count('timetable', distinct=True, )).\
+            annotate(max_used_count=F('practice_hours') + F('theory_hours'),).filter(rooms__classroom_id=room.id).\
             distinct()
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
         result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]

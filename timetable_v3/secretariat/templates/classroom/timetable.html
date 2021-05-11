@@ -46,26 +46,55 @@
         {% endif %}
 
     </div>
-        <h2>Bu derslikte gece bilener dersler</h2>
-    <div class="row container mt-2">
+
+    {% if timetable %}
+        {% include 'partial/secretariat_classroom_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
+    {% endif %}
+    </div>
+    <h2 class="text-center">Bu derslikte gece bilen dersler</h2>
+    <div class="mx-auto ">
+    <input id="filter" type="text">
+        <label for="filter">Filter</label>
+    </div>
+    <div class="row mt-2 mx-auto">
         {% for course in unused_courses %}
         <div style="width: 300px; height: 120px; padding: 0" class="table-{{ course.type.type_code|get_type }} parent-draggable" data-course-id="{{ course.id }}" data-not-acceptable="{{ course.get_reserved_list }}">
 
-            {{ course.name }}<br>
         {{ course.code }}<br>
         {{ course.teacher }}<br>
-        {{ course.department }}<br>
+        {{ course.department }} - {{ course.year }} Sinif<br>
             <div class="counts">
         {{ course.used_count }}/{{ course.max_used_count }}
             </div>
         </div>
         {% endfor %}
     </div>
-    {% if timetable %}
-        {% include 'partial/secretariat_classroom_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
-    {% endif %}
 </div>
-</div>
+    <script>
+    $("#filter").keyup(function() {
+
+      // Retrieve the input field text and reset the count to zero
+      var filter = $(this).val(),
+        count = 0;
+
+      // Loop through the comment list
+      $('.parent-draggable').each(function() {
+
+
+        // If the list item does not contain the text phrase fade it out
+        if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+          $(this).hide();  // MY CHANGE
+
+          // Show the list item if the phrase matches and increase the count by 1
+        } else {
+          $(this).show(); // MY CHANGE
+          count++;
+        }
+
+      });
+
+    });
+    </script>
 <script>
 function val() {
     first = false;
@@ -127,10 +156,6 @@ function val() {
         new_item = previous.clone();
         if ($(previous.parent()).prop("tagName") === "TD"){
         $(previous.parent().droppable('enable'));
-
-        console.log(previous.data('course-id'))
-        console.log($(previous.parent()).data('id'))
-            console.log($(this).data('id'));
         let course_id = previous.data('course-id');
         let old_time_hour_day = $(previous.parent()).data('id');
         let new_time_hour_day = $(this).data('id');
