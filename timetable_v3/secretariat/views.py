@@ -1,7 +1,7 @@
 import json
 
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.views import LoginView, LogoutView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -17,6 +17,14 @@ from webapp.views import ListTimeTable
 from django.db import models
 from django.db.models import Count, F, Q, Sum
 
+
+class LoginRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('secretariat:login')
+        return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+
+
 class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
@@ -28,7 +36,7 @@ class CustomLogoutView(LogoutView):
     next_page = 'secretariat:login'
 
 
-class ClassRoomTimeTableView(View):
+class ClassRoomTimeTableView(LoginRequiredMixin, View):
     template_name = 'classroom/timetable.html'
 
     def get(self, request, *args, **kwargs):
@@ -65,47 +73,7 @@ class ClassRoomTimeTableView(View):
         return ClassRoom.objects.select_related('building').exclude(name=TIMETABLE_RESERVED).order_by('building__short_name')
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class TimeTableActionsView(View):
-
-    @staticmethod
-    def get_time_day_objects(time_hour_day):
-        day, hour = time_hour_day % 5, time_hour_day // 5
-        day += 1
-        hour += 1
-        day = TimeDay.objects.get(id=day)
-        hour = TimeHour.objects.get(id=hour)
-        return day, hour
-
-    def post(self, request, *args, **kwargs):
-        response = {'message': 'ok'}
-        data = json.loads(request.body)
-        action_type = data['action_type']
-        handler_method = getattr(self, action_type, '')
-        handler_method(data['data']) if handler_method else None
-        return JsonResponse(response)
-
-    def action_delete(self, data):
-        course_id, time_hour_day, classroom_id = data['course_id'], data['time_hour_day'], data['classroom_id']
-        day, hour = self.get_time_day_objects(time_hour_day=time_hour_day)
-        TimeTable.objects.filter(course_id=course_id, time_day=day, time_hour=hour).delete()
-
-    def action_move(self, data):
-        course_id, old_time_hour_day, new_old_hour_day, classroom_id = \
-            data['course_id'], data['old_time_hour_day'], data['new_time_hour_day'], data['classroom_id']
-        old_day, old_hour = self.get_time_day_objects(time_hour_day=old_time_hour_day)
-        new_day, new_hour = self.get_time_day_objects(time_hour_day=new_old_hour_day)
-        TimeTable.objects.filter(classroom_id=classroom_id, time_day=old_day, time_hour=old_hour, course_id=course_id)\
-            .update(time_day=new_day, time_hour=new_hour)
-
-    def action_create(self, data):
-        course_id, time_hour_day, classroom_id = data['course_id'], data['time_hour_day'], data['classroom_id']
-        day, hour = self.get_time_day_objects(time_hour_day=time_hour_day)
-        if not TimeTable.objects.filter(classroom_id=classroom_id, time_day=day, time_hour=hour).exists():
-            TimeTable.objects.create(classroom_id=classroom_id, time_day=day, time_hour=hour, course_id=course_id)
-
-
-class ListClassRoomView(ListView):
+class ListClassRoomView(LoginRequiredMixin, ListView):
     template_name = 'classroom/list.html'
     context_object_name = 'classrooms'
 
@@ -118,7 +86,7 @@ class ListClassRoomView(ListView):
         return ClassRoom.objects.select_related('building', 'room_type', 'department').filter(user_id=self.request.user.id)
 
 
-class CreateClassRoomView(CreateView):
+class CreateClassRoomView(LoginRequiredMixin, CreateView):
     form_class = ClassRoomForm
     template_name = 'classroom/create.html'
 
@@ -131,28 +99,7 @@ class CreateClassRoomView(CreateView):
         return reverse('secretariat:list_class_room')
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class ReserveClassRoomView(View):
-    def post(self, request, *args, **kwargs):
-        response = {'message': 'ok'}
-        data = json.loads(request.body)
-        action_type = data['action_type']
-        handler_method = getattr(self, action_type, '')
-        handler_method(data['data']) if handler_method else None
-        return JsonResponse(response)
-
-    def action_delete(self, data):
-        day_id, hour_id, classroom_id = data['day_id'], data['hour_id'], data['classroom_id']
-        classroom = get_object_or_404(ClassRoom, id=classroom_id)
-        classroom.delete_reserved(day_id=day_id, hour_id=hour_id)
-
-    def action_create(self, data):
-        day_id, hour_id, classroom_id = data['day_id'], data['hour_id'], data['classroom_id']
-        classroom = get_object_or_404(ClassRoom, id=classroom_id)
-        classroom.create_reserved(day_id=day_id, hour_id=hour_id)
-
-
-class UpdateClassRoomView(UpdateView):
+class UpdateClassRoomView(LoginRequiredMixin, UpdateView):
     form_class = ClassRoomForm
     template_name = 'classroom/update.html'
 
@@ -173,7 +120,7 @@ class UpdateClassRoomView(UpdateView):
         return reverse('secretariat:list_class_room')
 
 
-class DeleteClassRoomView(DeleteView):
+class DeleteClassRoomView(LoginRequiredMixin, DeleteView):
     template_name = 'partial/delete.html'
 
     def get_object(self, queryset=None):
@@ -183,7 +130,7 @@ class DeleteClassRoomView(DeleteView):
         return reverse('secretariat:list_class_room')
 
 
-class ListTeacherView(ListView):
+class ListTeacherView(LoginRequiredMixin, ListView):
     template_name = 'teacher/list.html'
     context_object_name = 'teachers'
 
@@ -196,7 +143,7 @@ class ListTeacherView(ListView):
         return Teacher.objects.filter(user_id=self.request.user.id).order_by('name')
 
 
-class CreateTeacherView(CreateView):
+class CreateTeacherView(LoginRequiredMixin, CreateView):
     form_class = TeacherForm
     template_name = 'teacher/create.html'
 
@@ -209,7 +156,7 @@ class CreateTeacherView(CreateView):
         return reverse('secretariat:list_teacher')
 
 
-class UpdateTeacherView(UpdateView):
+class UpdateTeacherView(LoginRequiredMixin, UpdateView):
     form_class = TeacherForm
     template_name = 'teacher/update.html'
 
@@ -230,28 +177,7 @@ class UpdateTeacherView(UpdateView):
         return reverse('secretariat:list_teacher')
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class ReserveTeacherView(View):
-    def post(self, request, *args, **kwargs):
-        response = {'message': 'ok'}
-        data = json.loads(request.body)
-        action_type = data['action_type']
-        handler_method = getattr(self, action_type, '')
-        handler_method(data['data']) if handler_method else None
-        return JsonResponse(response)
-
-    def action_delete(self, data):
-        day_id, hour_id, teacher_id = data['day_id'], data['hour_id'], data['teacher_id']
-        teacher = get_object_or_404(Teacher, id=teacher_id)
-        teacher.delete_reserved(day_id=day_id, hour_id=hour_id)
-
-    def action_create(self, data):
-        day_id, hour_id, teacher_id = data['day_id'], data['hour_id'], data['teacher_id']
-        teacher = get_object_or_404(Teacher, id=teacher_id)
-        teacher.create_reserved(day_id=day_id, hour_id=hour_id)
-
-
-class DeleteTeacherView(DeleteView):
+class DeleteTeacherView(LoginRequiredMixin, DeleteView):
     template_name = 'partial/delete.html'
 
     def get_object(self, queryset=None):
@@ -261,7 +187,7 @@ class DeleteTeacherView(DeleteView):
         return reverse('secretariat:list_teacher')
 
 
-class ListGradeYearView(ListView):
+class ListGradeYearView(LoginRequiredMixin, ListView):
     template_name = 'grade_year/list.html'
     context_object_name = 'grade_years'
 
@@ -275,7 +201,7 @@ class ListGradeYearView(ListView):
         return GradeYear.objects.select_related('department').filter(department__faculty_id=faculty.id)
 
 
-class CreateGradeYearView(CreateView):
+class CreateGradeYearView(LoginRequiredMixin, CreateView):
     form_class = GradeYearForm
     template_name = 'grade_year/create.html'
 
@@ -288,28 +214,7 @@ class CreateGradeYearView(CreateView):
         return reverse('secretariat:list_grade_year')
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class ReserveGradeYearView(View):
-    def post(self, request, *args, **kwargs):
-        response = {'message': 'ok'}
-        data = json.loads(request.body)
-        action_type = data['action_type']
-        handler_method = getattr(self, action_type, '')
-        handler_method(data['data']) if handler_method else None
-        return JsonResponse(response)
-
-    def action_delete(self, data):
-        day_id, hour_id, grade_year_id = data['day_id'], data['hour_id'], data['grade_year_id']
-        grade_year = get_object_or_404(GradeYear, id=grade_year_id)
-        grade_year.delete_reserved(day_id=day_id, hour_id=hour_id)
-
-    def action_create(self, data):
-        day_id, hour_id, grade_year_id = data['day_id'], data['hour_id'], data['grade_year_id']
-        grade_year = get_object_or_404(GradeYear, id=grade_year_id)
-        grade_year.create_reserved(day_id=day_id, hour_id=hour_id)
-
-
-class UpdateGradeYearView(UpdateView):
+class UpdateGradeYearView(LoginRequiredMixin, UpdateView):
     form_class = GradeYearForm
     template_name = 'grade_year/update.html'
 
@@ -330,7 +235,7 @@ class UpdateGradeYearView(UpdateView):
         return reverse('secretariat:list_grade_year')
 
 
-class DeleteGradeYearView(DeleteView):
+class DeleteGradeYearView(LoginRequiredMixin, DeleteView):
     template_name = 'partial/delete.html'
 
     def get_object(self, queryset=None):
@@ -340,7 +245,7 @@ class DeleteGradeYearView(DeleteView):
         return reverse('secretariat:list_grade_year')
 
 
-class ListCourseView(ListView):
+class ListCourseView(LoginRequiredMixin, ListView):
     template_name = 'course/list.html'
     context_object_name = 'courses'
 
@@ -355,7 +260,7 @@ class ListCourseView(ListView):
                    .filter(user_id=self.request.user.id)
 
 
-class CreateCourseView(CreateView):
+class CreateCourseView(LoginRequiredMixin, CreateView):
     form_class = CourseForm
     template_name = 'course/create.html'
 
@@ -368,7 +273,7 @@ class CreateCourseView(CreateView):
         return reverse('secretariat:list_course')
 
 
-class UpdateCourseView(UpdateView):
+class UpdateCourseView(LoginRequiredMixin, UpdateView):
     form_class = CourseForm
     template_name = 'course/update.html'
 
@@ -384,7 +289,7 @@ class UpdateCourseView(UpdateView):
         return reverse('secretariat:list_course')
 
 
-class DeleteCourseView(DeleteView):
+class DeleteCourseView(LoginRequiredMixin, DeleteView):
     template_name = 'partial/delete.html'
 
     def get_object(self, queryset=None):
@@ -394,7 +299,7 @@ class DeleteCourseView(DeleteView):
         return reverse('secretariat:list_course')
 
 
-class ListCourseVsRoomView(ListView):
+class ListCourseVsRoomView(LoginRequiredMixin, ListView):
     template_name = 'coursevsroom/list.html'
     context_object_name = 'coursevsrooms'
 
@@ -407,7 +312,7 @@ class ListCourseVsRoomView(ListView):
         return CourseVsRoom.objects.select_related('course', 'classroom', 'classroom__building').filter(user_id=self.request.user.id)
 
 
-class CreateCourseVsRoomView(CreateView):
+class CreateCourseVsRoomView(LoginRequiredMixin, CreateView):
     form_class = CourseVsRoomForm
     template_name = 'coursevsroom/create.html'
 
@@ -420,7 +325,7 @@ class CreateCourseVsRoomView(CreateView):
         return reverse('secretariat:list_course_vs_room')
 
 
-class UpdateCourseVsRoomView(UpdateView):
+class UpdateCourseVsRoomView(LoginRequiredMixin, UpdateView):
     form_class = CourseVsRoomForm
     template_name = 'coursevsroom/update.html'
 
@@ -436,7 +341,7 @@ class UpdateCourseVsRoomView(UpdateView):
         return reverse('secretariat:list_course_vs_room')
 
 
-class DeleteCourseVsRoomView(DeleteView):
+class DeleteCourseVsRoomView(LoginRequiredMixin, DeleteView):
     template_name = 'partial/delete.html'
 
     def get_object(self, queryset=None):

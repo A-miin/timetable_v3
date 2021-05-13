@@ -20,9 +20,9 @@
     </div>
     </form>
     <script>
-     function send_request(data) {
-         fetch('http://localhost:8000/secretariat/api/grade_year/reserve/', {
-             method: 'POST', // or 'PUT'
+     function send_request(data, method) {
+         fetch('http://localhost:8000/api/reserve/grade_year/', {
+             method: method, // or 'PUT'
              headers: {
                  'Content-Type': 'application/json',
              },
@@ -38,12 +38,15 @@
         let day = $(this).data('day-id');
         let hour = $(this).data('hour-id');
 
-        if (this.checked)
-            data = {'action_type': 'action_create', 'data': {'day_id': day, 'hour_id': hour, 'grade_year_id': {{object.id}}}}
+        if (this.checked) {
+            data = {'day_id': day, 'hour_id': hour, 'grade_year_id': {{object.id}}}
+            send_request(data, 'POST')
+        }
 
-        else
-            data = {'action_type': 'action_delete', 'data': {'day_id': day, 'hour_id': hour, 'grade_year_id': {{object.id}}}}
-        send_request(data);
+        else {
+            data = {'day_id': day, 'hour_id': hour, 'grade_year_id': {{object.id}}}
+            send_request(data, 'DELETE')
+        }
     });
     </script>
 {% endblock %}

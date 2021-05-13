@@ -21,9 +21,9 @@
     </div>
     </form>
     <script>
-     function send_request(data) {
-         fetch('http://localhost:8000/secretariat/api/classroom/reserve/', {
-             method: 'POST', // or 'PUT'
+     function send_request(data, method) {
+         fetch('http://localhost:8000/api/reserve/classroom/', {
+             method: method, // or 'PUT'
              headers: {
                  'Content-Type': 'application/json',
              },
@@ -39,12 +39,16 @@
         let day = $(this).data('day-id');
         let hour = $(this).data('hour-id');
 
-        if (this.checked)
-            data = {'action_type': 'action_create', 'data': {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}}
+        if (this.checked) {
+            data = {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}
 
-        else
-            data = {'action_type': 'action_delete', 'data': {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}}
-        send_request(data);
+        send_request(data, 'POST');
+        }
+
+        else {
+            data = {'day_id': day, 'hour_id': hour, 'classroom_id': {{object.id}}}
+            send_request(data, 'DELETE');
+        }
     });
     </script>
 {% endblock %}

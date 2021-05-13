@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('webapp.urls')),
     path('secretariat/', include('secretariat.urls', namespace='secretariat')),
+    path('api/', include('api.urls', namespace='api')),
     path('__debug__/', include(debug_toolbar.urls)),
 ]
 

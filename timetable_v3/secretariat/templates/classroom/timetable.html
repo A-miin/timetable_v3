@@ -118,9 +118,9 @@ function val() {
 
 </script>
     <script>
-    function send_request(data){
-        fetch('http://localhost:8000/secretariat/api/timetable/', {
-  method: 'POST', // or 'PUT'
+    function send_request(data, method){
+        fetch('http://localhost:8000/api/timetable/', {
+  method: method, // or 'PUT'
   headers: {
     'Content-Type': 'application/json',
   },
@@ -160,11 +160,10 @@ function val() {
         let old_time_hour_day = $(previous.parent()).data('id');
         let new_time_hour_day = $(this).data('id');
         let classroom_id = $( "#room_id" ).val();
-              data = {'action_type': 'action_move',
-                  'data': {'course_id': course_id, 'old_time_hour_day': old_time_hour_day,
+              data = {'course_id': course_id, 'old_time_hour_day': old_time_hour_day,
                       'new_time_hour_day': new_time_hour_day, 'classroom_id': classroom_id}
-              }
-              send_request(data);
+
+              send_request(data, "PUT");
         $(ui.draggable[0]).remove();
 
         }
@@ -175,10 +174,9 @@ function val() {
             let course_id = previous.data('course-id');
             let time_hour_day = $(this).data('id');
             let classroom_id = $( "#room_id" ).val();
-              data = {'action_type': 'action_create',
-                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
-              }
-              send_request(data)
+              data = {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+
+              send_request(data, "POST")
         }
         $(new_item.children()).on("click",function(e) {
               e.preventDefault();
@@ -186,10 +184,9 @@ function val() {
               let course_id = $(this).parent().data('course-id');
               let time_hour_day = $(this).parent().parent().data('id');
               let classroom_id = $( "#room_id" ).val();
-              data = {'action_type': 'action_delete',
-                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
-              }
-              send_request(data);
+              data = {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+
+              send_request(data, 'DELETE');
               $(this).parent().remove();
 
         });
@@ -211,10 +208,9 @@ function val() {
               let course_id = $(this).parent().data('course-id');
               let time_hour_day = $(this).parent().parent().data('id');
               let classroom_id = $( "#room_id" ).val();
-              data = {'action_type': 'action_delete',
-                  'data': {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
-              }
-              send_request(data);
+              data = {'course_id': course_id, 'time_hour_day': time_hour_day, 'classroom_id': classroom_id}
+
+              send_request(data, "DELETE");
               $(this).parent().remove();
 
 });

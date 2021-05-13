@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     #my apps
     'webapp',
     'secretariat',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,12 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    # other settings...
 
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': [],
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
