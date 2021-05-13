@@ -10,6 +10,10 @@ SUBE_TYPE = [
     (5, 'başka bölümün dersi ile birleşik verilecek (teori ve ugulama)'),
     (6, 'başka bölümün dersi ile birleşik verilecek (teori)')
 ]
+LESSON_TYPES = [
+    (0, 'Teorik'),
+    (1, 'Uygulama')
+]
 TIMETABLE_RESERVED = 'reserved'
 
 
@@ -260,6 +264,10 @@ class CourseVsRoom(models.Model):
             return f'{self.course.name} -> {self.classroom.name}'
         else:
             return self.course.name
+
+    @property
+    def str_lesson_type(self):
+        return LESSON_TYPES[self.lesson_type][1]
     class Meta:
         db_table = 'course_vs_room'
 

@@ -10,7 +10,7 @@
 						<h2><b>Özel Alan Dersler</b></h2>
 					</div>
 					<div class="col-sm-6">
-						<a href="{% url 'secretariat:create_course_vs_room' %}" class="btn btn-success"><i class="material-icons">&#xE147;</i> <span>Yeni Öğretmen olustur</span></a>
+						<a href="{% url 'secretariat:create_course_vs_room' %}" class="btn btn-success"><i class="material-icons">&#xE147;</i> <span>Yeni Ders x Derslik olustur</span></a>
 					</div>
 				</div>
 			</div>
@@ -27,7 +27,7 @@
                 {% for coursevsroom in coursevsrooms %}
 					<tr>
 						<td>{{ coursevsroom.course}}</td>
-                        <td>{{ coursevsroom.lesson_type }}</td>
+                        <td>{{ coursevsroom.str_lesson_type }}</td>
 						<td>{{ coursevsroom.classroom.full_name}}</td>
 						<td>
 							<a href="{% url 'secretariat:update_course_vs_room' id=coursevsroom.id %}" class="edit"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>

@@ -51,6 +51,7 @@
         {% include 'partial/secretariat_classroom_timetable.html' with teacher=selected_teacher days=days hours=hours timetable=timetable %}
     {% endif %}
     </div>
+    {% if unused_courses %}
     <h2 class="text-center">Bu derslikte gece bilen dersler</h2>
     <div class="mx-auto ">
     <input id="filter" type="text">
@@ -69,6 +70,7 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 </div>
     <script>
     $("#filter").keyup(function() {

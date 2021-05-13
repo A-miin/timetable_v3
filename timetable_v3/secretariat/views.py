@@ -350,3 +350,14 @@ class DeleteCourseVsRoomView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse('secretariat:list_course_vs_room')
 
+
+class UnusedCourseView(ListView):
+    template_name = 'course/unused_list.html'
+    context_object_name = 'courses'
+
+    def get_queryset(self):
+        qs = Course.objects.select_related('teacher', 'department', 'type','theory_room_type', 'practice_room_type').annotate(
+            used_count=Count('timetable', distinct=True, )). \
+            annotate(max_used_count=F('practice_hours') + F('theory_hours'),).\
+            exclude(used_count=F('max_used_count')).filter(semester='Bahar').filter(user_id=self.request.user.id)
+        return qs
