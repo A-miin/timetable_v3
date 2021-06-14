@@ -139,7 +139,6 @@ class ClassRoom(models.Model):
     name= models.CharField(max_length=255, null=True, blank=True)
     capacity = models.IntegerField(null=True, blank=True)
     room_type = models.ForeignKey(to=RoomType, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True, db_column='roomType_id')
-    
     def __str__(self):
         if self.building:
             return f'{self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
@@ -243,7 +242,7 @@ class Course(models.Model):
         return json.dumps(ids)
 
     def __str__(self):
-        return self.name
+        return f'{self.code}:{self.name}->{self.department.name}'
 
     def full_name(self):
         if self.name == 'reserved':
@@ -383,7 +382,7 @@ class TimeTable(models.Model):
         db_table = 'timeTable'
 
     def __str__(self):
-        return f'{self.course.name}->{self.classroom.name}({self.time_day}:{self.time_hour})'
+        return f'{self.course.code}->{self.classroom.name}({self.time_day}:{self.time_hour})'
         # return f'{self.course.name}'
 
     @staticmethod
