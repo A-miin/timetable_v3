@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models, transaction
+from model_clone import CloneMixin,CloneModelAdmin
 
 SUBE_TYPE = [
     (0, 'bölunmeyecek/birleştirilmeyecek'),
@@ -132,7 +133,7 @@ class ReservedTimeTable:
         self.reserved = reserved
 
 
-class ClassRoom(models.Model):
+class ClassRoom( models.Model):
     building = models.ForeignKey(to=Building, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
     department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
     user = models.ForeignKey(to=User, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
@@ -202,7 +203,7 @@ class CourseType(models.Model):
         db_table = 'course_type'
 
 
-class Course(models.Model):
+class Course(models.Model,CloneMixin):
     teacher = models.ForeignKey(to=Teacher, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(to=Department, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
     user = models.ForeignKey(to=User, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
@@ -242,7 +243,10 @@ class Course(models.Model):
         return json.dumps(ids)
 
     def __str__(self):
-        return f'{self.code}:{self.name}->{self.department.name}'
+        if self.name and self.code and self.department:
+            return f'{self.code}:{self.name}->{self.department.name}'
+        else:
+            return TIMETABLE_RESERVED
 
     def full_name(self):
         if self.name == 'reserved':

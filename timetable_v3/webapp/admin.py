@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import Department, Faculty, Building, RoomType, Teacher, ClassRoom, CourseType, Editor, Course, \
     CourseVsRoom, GradeYear, TimeTableGenerator, TimeDay, TimeHour, TimeTable, UserFaculty
 from django.db.models import Q
-
+from model_clone import CloneModelAdmin
 TIMETABLE_RESERVED = 'reserved'
 
 class TimeTableAdmin(admin.ModelAdmin):
@@ -15,7 +15,7 @@ class TimeTableAdmin(admin.ModelAdmin):
                                          Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
                                          Q(course__isnull=True) | Q(course__teacher__isnull=True))
 
-class CourseAdmin(admin.ModelAdmin):
+class CourseAdmin(CloneModelAdmin):
     model = Course
     search_fields = ['name', 'code', 'teacher__name']
     list_filter = ('department__name',)
