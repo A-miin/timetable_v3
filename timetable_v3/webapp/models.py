@@ -45,6 +45,9 @@ class UserFaculty(models.Model):
     user = models.OneToOneField(to=User, related_name='faculty', on_delete=models.CASCADE)
     faculty = models.OneToOneField(to=Faculty, related_name='user_faculties', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.user} -> {self.faculty.name}'
+
 
 class Department(models.Model):
     faculty = models.ForeignKey(to=Faculty, related_name='departments', on_delete=models.SET_NULL, default=None, null=True, blank=True)
@@ -136,10 +139,11 @@ class ClassRoom(models.Model):
     name= models.CharField(max_length=255, null=True, blank=True)
     capacity = models.IntegerField(null=True, blank=True)
     room_type = models.ForeignKey(to=RoomType, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True, db_column='roomType_id')
-
-
+    
     def __str__(self):
-        return f'{self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
+        if self.building:
+            return f'{self.building.short_name}-{self.name} kapasitesi: {self.capacity}'
+        return TIMETABLE_RESERVED
 
     @property
     def short_name(self):
@@ -219,6 +223,7 @@ class Course(models.Model):
     unpositioned_practice_hours = models.IntegerField(db_column='unpositionedUygulamaHours', null=True, blank=True)
     semester = models.CharField(max_length=255, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
+    # year = models.ForeignKey(to='webapp.GradeYear', related_name='courses', on_delete=models.CASCADE)
 
     def get_reserved_list(self):
         reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
@@ -376,6 +381,10 @@ class TimeTable(models.Model):
 
     class Meta:
         db_table = 'timeTable'
+
+    def __str__(self):
+        return f'{self.course.name}->{self.classroom.name}({self.time_day}:{self.time_hour})'
+        # return f'{self.course.name}'
 
     @staticmethod
     def get_time_day_objects(time_hour_day):

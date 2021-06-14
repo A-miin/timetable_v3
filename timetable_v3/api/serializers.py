@@ -11,7 +11,6 @@ class DeleteTimeTableSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         day, hour = TimeTable.get_time_day_objects(time_hour_day=self.validated_data.pop('time_hour_day'))
-        print(self.validated_data)
         classroom_id, course_id = self.validated_data['classroom_id'], self.validated_data['course_id']
         TimeTable.objects.filter(course_id=course_id, time_day=day,
                                  classroom_id=classroom_id,time_hour=hour).delete()
