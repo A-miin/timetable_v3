@@ -5,7 +5,7 @@ from django.db.models import Q
 from model_clone import CloneModelAdmin
 TIMETABLE_RESERVED = 'reserved'
 
-class TimeTableAdmin(admin.ModelAdmin):
+class TimeTableAdmin(CloneModelAdmin):
     list_filter = ('course__department__name', )
     search_fields = ['course__name', 'classroom__name', 'course__teacher__name']
 
@@ -20,12 +20,12 @@ class CourseAdmin(CloneModelAdmin):
     search_fields = ['name', 'code', 'teacher__name']
     list_filter = ('department__name',)
 
-class ClassRoomAdmin(admin.ModelAdmin):
+class ClassRoomAdmin(CloneModelAdmin):
     model = ClassRoom
     search_fields = ['name', 'building__short_name', 'building__name']
     list_filter = ('building__name',)
 
-class TeacherAdmin(admin.ModelAdmin):
+class TeacherAdmin(CloneModelAdmin):
     model = Teacher
     search_fields = ['name', 'code']
     list_filter = ('courses__department__name',)

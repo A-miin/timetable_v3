@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models, transaction
-from model_clone import CloneMixin,CloneModelAdmin
+from model_clone import CloneMixin
 
 SUBE_TYPE = [
     (0, 'bölunmeyecek/birleştirilmeyecek'),
@@ -72,7 +72,7 @@ class RoomType(models.Model):
         db_table = 'room_type'
 
 
-class Teacher(models.Model):
+class Teacher(CloneMixin, models.Model):
     user = models.ForeignKey(to=User, related_name='teachers', on_delete=models.SET_NULL, null=True, blank=True)
     code = models.IntegerField(db_column='sicil', null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -133,7 +133,7 @@ class ReservedTimeTable:
         self.reserved = reserved
 
 
-class ClassRoom( models.Model):
+class ClassRoom(CloneMixin, models.Model):
     building = models.ForeignKey(to=Building, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
     department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
     user = models.ForeignKey(to=User, on_delete=models.SET_NULL, related_name='classrooms', null=True, blank=True)
@@ -203,7 +203,7 @@ class CourseType(models.Model):
         db_table = 'course_type'
 
 
-class Course(models.Model,CloneMixin):
+class Course(CloneMixin, models.Model):
     teacher = models.ForeignKey(to=Teacher, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(to=Department, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
     user = models.ForeignKey(to=User, related_name='courses', on_delete=models.SET_NULL, null=True, blank=True)
@@ -374,7 +374,7 @@ class TimeHour(models.Model):
         db_table = 'timeHour'
 
 
-class TimeTable(models.Model):
+class TimeTable(CloneMixin, models.Model):
     course = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=True, blank=True)
     classroom = models.ForeignKey(to=ClassRoom, on_delete=models.CASCADE, null=True, blank=True)
     time_day = models.ForeignKey(to=TimeDay, on_delete=models.SET_NULL, null=True, blank=True)

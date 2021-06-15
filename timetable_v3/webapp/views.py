@@ -8,7 +8,7 @@ from django.views.generic.base import View
 
 from webapp.models import Teacher, TimeTable, TimeDay, TimeHour, Department, ClassRoom, Building, Faculty, \
     TIMETABLE_RESERVED
-
+from django.db.models import Q
 
 def home(request):
     return render(request, 'index.html')
@@ -32,7 +32,7 @@ class ListTimeTable(object):
         return self.classroom is None
 
     def get_values(self, table: TimeTable):
-        if table.course.name != TIMETABLE_RESERVED:
+        if  table.course and table.course.name != TIMETABLE_RESERVED :
             if self.classroom is None :
                 self.course = table.course.full_name
                 self.course_type = table.course.type.type_code
@@ -67,7 +67,11 @@ class TeacherTimeTableView(View):
                 teacher = Teacher.objects.get(id=teacher_id)
             else:
                 teacher = Teacher.objects.get(code=int(teacher_code))
-            timetable = TimeTable.objects.filter(course__teacher=teacher).order_by('time_hour_id', 'time_day_id')
+            timetable = TimeTable.objects.filter(course__teacher=teacher).\
+                                        order_by('time_hour_id', 'time_day_id').\
+                                        exclude(Q(course__name=TIMETABLE_RESERVED) | Q(classroom__name=TIMETABLE_RESERVED) |
+                                         Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
+                                         Q(course__isnull=True) | Q(course__teacher__isnull=True))
             days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
             result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
             for table in result:
@@ -106,10 +110,14 @@ class DepartmentView(View):
             grades = department.grade_years.all().values_list('grade', flat=True).order_by('grade')
 
             timetable = TimeTable.objects.\
-                filter(course__department=department).select_related('course', 'course__department', 'course__teacher',
-                                                                     'course__department__faculty', 'classroom',
-                                                                     'course__type', 'classroom__building').\
-                order_by('course__year','time_hour_id', 'time_day_id')
+                filter(course__department=department).\
+                            select_related('course', 'course__department', 'course__teacher',
+                             'course__department__faculty', 'classroom',
+                             'course__type', 'classroom__building').\
+                            order_by('course__year','time_hour_id', 'time_day_id'). \
+                            exclude(Q(course__name=TIMETABLE_RESERVED) | Q(classroom__name=TIMETABLE_RESERVED) |
+                             Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
+                             Q(course__isnull=True) | Q(course__teacher__isnull=True))
             days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
             years = {grade: [] for grade in grades}
             for table in timetable:
@@ -164,7 +172,11 @@ class RoomView(View):
             building_short_names = Building.objects.order_by('short_name')
             room_id = self.request.POST.get('room', 0)
             room = get_object_or_404(ClassRoom, id=room_id)
-            timetable = TimeTable.objects.filter(classroom=room).order_by('time_hour_id', 'time_day_id')
+            timetable = TimeTable.objects.filter(classroom=room).\
+                order_by('time_hour_id', 'time_day_id'). \
+                exclude(Q(course__name=TIMETABLE_RESERVED) | Q(classroom__name=TIMETABLE_RESERVED) |
+                         Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
+                         Q(course__isnull=True) | Q(course__teacher__isnull=True))
             days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
             result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
             for table in result:
