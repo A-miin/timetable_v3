@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models, transaction
 from model_clone import CloneMixin
+from auditlog.registry import auditlog
 
 SUBE_TYPE = [
     (0, 'bölunmeyecek/birleştirilmeyecek'),
@@ -243,8 +244,8 @@ class Course(CloneMixin, models.Model):
         return json.dumps(ids)
 
     def __str__(self):
-        if self.name and self.code and self.department:
-            return f'{self.code}:{self.name}->{self.department.name}'
+        if self.name:
+            return self.name
         else:
             return TIMETABLE_RESERVED
 
@@ -328,29 +329,6 @@ class GradeYear(models.Model):
         db_table = 'grade_year'
 
 
-class TimeTableGenerator(models.Model):
-    course = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True)
-    teacher = models.ForeignKey(to=Teacher, on_delete=models.SET_NULL, null=True, blank=True)
-    room = models.ForeignKey(to=ClassRoom, on_delete=models.SET_NULL, null=True, blank=True)
-    grade_year = models.ForeignKey(to=GradeYear, on_delete=models.SET_NULL, null=True, blank=True, db_column='gradeYear_id')
-    department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        db_table = 'ders_plan_generator'
-
-
-class Editor(models.Model):
-    course = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True)
-    classroom = models.ForeignKey(to=ClassRoom, on_delete=models.SET_NULL, null=True, blank=True)
-    teacher = models.ForeignKey(to=Teacher, on_delete=models.SET_NULL, null=True, blank=True)
-    old_time = models.IntegerField(db_column='oldtime', null=True)
-    new_time = models.IntegerField(db_column='new_time', null=True)
-    department = models.ForeignKey(to=Department, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        db_table = 'editor'
-
-
 class TimeDay(models.Model):
     id = models.PositiveIntegerField(primary_key=True, db_column='idtimeDay')
     order_position = models.IntegerField(db_column='orderPosition', null=True, blank=True)
@@ -387,7 +365,6 @@ class TimeTable(CloneMixin, models.Model):
 
     def __str__(self):
         return f'{self.course.code}->{self.classroom.name}({self.time_day}:{self.time_hour})'
-        # return f'{self.course.name}'
 
     @staticmethod
     def get_time_day_objects(time_hour_day):
@@ -403,3 +380,19 @@ class TimeTable(CloneMixin, models.Model):
         day, hour = day.id-1, hour.id - 1
         time_hour_day = day + (5 * hour)
         return time_hour_day
+
+
+
+auditlog.register(Building)
+auditlog.register(Faculty)
+auditlog.register(UserFaculty)
+auditlog.register(Department)
+auditlog.register(RoomType)
+auditlog.register(Teacher)
+auditlog.register(ClassRoom)
+auditlog.register(CourseType)
+auditlog.register(CourseVsRoom)
+auditlog.register(GradeYear)
+auditlog.register(TimeDay)
+auditlog.register(TimeHour)
+auditlog.register(TimeTable)

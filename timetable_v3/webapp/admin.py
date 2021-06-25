@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Department, Faculty, Building, RoomType, Teacher, ClassRoom, CourseType, Editor, Course, \
-    CourseVsRoom, GradeYear, TimeTableGenerator, TimeDay, TimeHour, TimeTable, UserFaculty
+from .models import Department, Faculty, Building, RoomType, Teacher, ClassRoom, CourseType, Course, \
+    CourseVsRoom, GradeYear, TimeDay, TimeHour, TimeTable, UserFaculty
 from django.db.models import Q
 from model_clone import CloneModelAdmin
 TIMETABLE_RESERVED = 'reserved'
@@ -8,6 +8,7 @@ TIMETABLE_RESERVED = 'reserved'
 class TimeTableAdmin(CloneModelAdmin):
     list_filter = ('course__department__name', )
     search_fields = ['course__name', 'classroom__name', 'course__teacher__name']
+    list_display = ['id', 'course','classroom', 'time_hour','time_day']
 
     model = TimeTable
     def get_queryset(self, request):
@@ -19,16 +20,19 @@ class CourseAdmin(CloneModelAdmin):
     model = Course
     search_fields = ['name', 'code', 'teacher__name']
     list_filter = ('department__name',)
+    list_display = ['id','code', 'name', 'teacher', 'department']
 
 class ClassRoomAdmin(CloneModelAdmin):
     model = ClassRoom
     search_fields = ['name', 'building__short_name', 'building__name']
     list_filter = ('building__name',)
+    list_display = ['id', 'name', 'building', 'capacity', 'room_type']
 
 class TeacherAdmin(CloneModelAdmin):
     model = Teacher
     search_fields = ['name', 'code']
     list_filter = ('courses__department__name',)
+    list_display = ['id', 'code', 'name', 'unvan','employee_type']
 
 
 admin.site.register(Department)
@@ -42,8 +46,6 @@ admin.site.register(CourseType)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(CourseVsRoom)
 admin.site.register(GradeYear)
-admin.site.register(TimeTableGenerator)
-admin.site.register(Editor)
 admin.site.register(TimeDay)
 admin.site.register(TimeHour)
 admin.site.register(TimeTable, TimeTableAdmin)
