@@ -41,10 +41,14 @@ class MoveTimeTableSerializer(serializers.Serializer):
     def save(self, **kwargs):
         old_day, old_hour = TimeTable.get_time_day_objects(time_hour_day=self.validated_data['old_time_hour_day'])
         new_day, new_hour = TimeTable.get_time_day_objects(time_hour_day=self.validated_data['new_time_hour_day'])
-        classroom_id, course_id = self.validated_data['classroom_id'], self.validated_data['course_id']
-        TimeTable.objects.filter(classroom_id=classroom_id, time_day=old_day, time_hour=old_hour, course_id=course_id) \
-            .update(time_day=new_day, time_hour=new_hour)
 
+        day, hour = TimeTable.get_time_day_objects(time_hour_day=self.validated_data.pop('new_time_hour_day'))
+        classroom_id, course_id = self.validated_data['classroom_id'], self.validated_data['course_id']
+        if not TimeTable.objects.filter(classroom_id=classroom_id, time_day=day, time_hour=hour).exists():
+            TimeTable.objects.filter(classroom_id=classroom_id, time_day=old_day, time_hour=old_hour, course_id=course_id) \
+            .update(time_day=new_day, time_hour=new_hour)
+        else:
+            raise ValidationError("Classroom used")
 
 class DeleteReserveClassRoomSerializer(serializers.Serializer):
     day_id = serializers.IntegerField(required=True)
