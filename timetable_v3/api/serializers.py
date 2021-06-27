@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from webapp.models import TimeTable, ClassRoom, Teacher, GradeYear, Department, Faculty, Course
 
 
@@ -24,8 +26,10 @@ class CreateTimeTableSerializer(serializers.Serializer):
     def save(self, **kwargs):
         day, hour = TimeTable.get_time_day_objects(time_hour_day=self.validated_data.pop('time_hour_day'))
         classroom_id, course_id = self.validated_data['classroom_id'], self.validated_data['course_id']
-        if not TimeTable.objects.filter(classroom_id=classroom_id, time_day=day, time_hour=hour, course_id=course_id).exists():
+        if not TimeTable.objects.filter(classroom_id=classroom_id, time_day=day, time_hour=hour).exists():
             TimeTable.objects.create(classroom_id=classroom_id, time_day=day, time_hour=hour, course_id=course_id)
+        else:
+            raise ValidationError("Classroom used")
 
 
 class MoveTimeTableSerializer(serializers.Serializer):

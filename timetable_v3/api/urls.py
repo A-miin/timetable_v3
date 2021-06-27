@@ -1,7 +1,7 @@
 from django.urls import path
 
 from api.views import TimeTableView, ReserveClassRoomView, ReserveGradeYearView, FacultyView, DepartmentView, \
-    CourseTimeTableView
+    CourseTimeTableView, ReserveTeacherView
 
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -22,7 +22,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('timetable/', TimeTableView.as_view(), name='timetable'),
     path('reserve/classroom/', ReserveClassRoomView.as_view(), name='reserve_classroom'),
-    path('reserve/teacher/', ReserveClassRoomView.as_view(), name='reserve_classroom'),
+    path('reserve/teacher/', ReserveTeacherView.as_view(), name='reserve_classroom'),
     path('reserve/grade_year/', ReserveGradeYearView.as_view(), name='reserve_classroom'),
     path('faculty/', FacultyView.as_view(), name='faculty_list'),
     path('deparment/', DepartmentView.as_view(), name='department_list'),

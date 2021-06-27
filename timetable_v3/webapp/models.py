@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models, transaction
+from django.db.models import Subquery, F
 from model_clone import CloneMixin
 from auditlog.registry import auditlog
 
@@ -227,21 +228,26 @@ class Course(CloneMixin, models.Model):
     # year = models.ForeignKey(to='webapp.GradeYear', related_name='courses', on_delete=models.CASCADE)
 
     def get_reserved_list(self):
-        reserved_teacher = Teacher.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
-        reserved_grade_year_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=reserved_teacher,
-                                                       department=self.department, year=self.year)[0]
-        reserved_classroom = ClassRoom.objects.get_or_create(name=TIMETABLE_RESERVED)[0]
+        if hasattr(self, 'timetable_reserved_list'):
+            return self.timetable_reserved_list
         reserved_grade_year_timetable = [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour)
-                                         for table in TimeTable.objects.
-                                             filter(course=reserved_grade_year_course, classroom=reserved_classroom)]
+                                     for table in TimeTable.objects.select_related('time_day', 'time_hour').annotate(reserved_grade_year_course=Subquery(Course.objects.filter(name=TIMETABLE_RESERVED, teacher__name=TIMETABLE_RESERVED, department=self.department, year=self.year).values('id')[:1])).annotate(reserved_classroom=ClassRoom.objects.filter(name=TIMETABLE_RESERVED).values('id')[:1]).
+                                         filter(course_id=F('reserved_grade_year_course'), classroom_id=F('reserved_classroom'))]
 
-        reserved_teacher_course = Course.objects.get_or_create(name=TIMETABLE_RESERVED, teacher=self.teacher)[0]
+
         reserved_teacher_timetable =  [TimeTable.get_time_hour_day(day=table.time_day, hour=table.time_hour)
-                                         for table in TimeTable.objects.
-                                             filter(course=reserved_teacher_course, classroom=reserved_classroom)]
+     for table in TimeTable.objects.select_related('time_day', 'time_hour').annotate(reserved_teacher_course=Subquery(Course.objects.filter(name=TIMETABLE_RESERVED, teacher=self.teacher).values('id')[:1])).annotate(reserved_classroom=ClassRoom.objects.filter(name=TIMETABLE_RESERVED).values('id')[:1]).
+                                             filter(course_id=F('reserved_teacher_course'), classroom_id=F('reserved_classroom'))]
         ids = list(set((reserved_grade_year_timetable + reserved_teacher_timetable)))
         import json
         return json.dumps(ids)
+
+    def set_reserved_list(self, timetable_list):
+        l = []
+        for table in timetable_list:
+            if table.course.teacher == self.teacher or table.course.department == self.teacher and table.course.year == self.year:
+                l.append(TimeTable.get_time_hour_day(table.time_day, table.time_hour))
+        setattr(self, 'timetable_reserved_list', l)
 
     def __str__(self):
         if self.name:

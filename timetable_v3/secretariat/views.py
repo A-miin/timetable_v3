@@ -1,5 +1,6 @@
 import json
 
+from django.db.models.expressions import RawSQL
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.views import LoginView, LogoutView
@@ -15,7 +16,7 @@ from webapp.models import ClassRoom, Teacher, GradeYear, Course, CourseVsRoom, B
     TIMETABLE_RESERVED
 from webapp.views import ListTimeTable
 from django.db import models
-from django.db.models import Count, F, Q, Sum
+from django.db.models import Count, F, Q, Sum, Subquery, Prefetch
 
 
 class LoginRequiredMixin:
@@ -51,11 +52,28 @@ class ClassRoomTimeTableView(LoginRequiredMixin, View):
         room = get_object_or_404(ClassRoom, id=room_id)
         timetable = TimeTable.objects.select_related('classroom', 'classroom__building', 'course', 'course__teacher',
                                                      'course__type', 'course__department', 'course__department__faculty',
-                                                     'classroom__building', ).\
+                                                     'classroom__building','time_day', 'time_hour' ).\
             filter(classroom=room).order_by('time_hour_id', 'time_day_id')
         unused_courses = Course.objects.select_related('teacher', 'department', 'type').annotate(used_count=Count('timetable', distinct=True, )).\
-            annotate(max_used_count=F('practice_hours') + F('theory_hours'),).filter(rooms__classroom_id=room.id).\
-            distinct()
+            annotate(max_used_count=F('practice_hours') + F('theory_hours'),)
+        unused_courses = unused_courses.filter(rooms__classroom_id=room.id).distinct()
+        reserved_classroom = ClassRoom.objects.prefetch_related(Prefetch('timetable_set',
+                                                                         TimeTable.objects.select_related('classroom',
+                                                                                                          'classroom__building',
+                                                                                                          'course',
+                                                                                                          'course__teacher',
+                                                                                                          'course__type',
+                                                                                                          'course__department',
+                                                                                                          'course__department__faculty',
+                                                                                                          'classroom__building',
+                                                                                                          'time_day',
+                                                                                                          'time_hour').filter(course__name=TIMETABLE_RESERVED))).get(
+            name=TIMETABLE_RESERVED)
+        for course in unused_courses:
+            course.set_reserved_list(reserved_classroom.timetable_set.all())
+        for table in timetable:
+            table.course.set_reserved_list(reserved_classroom.timetable_set.all())
+
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
         result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
         for table in result:
