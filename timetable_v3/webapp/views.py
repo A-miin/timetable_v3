@@ -31,13 +31,13 @@ class ListTimeTable(object):
     def is_empty(self):
         return self.classroom is None
 
-    def get_values(self, table: TimeTable):
+    def get_values(self, table: TimeTable, take_reserved: bool = False):
         if  table.course and table.course.name != TIMETABLE_RESERVED :
             if self.classroom is None :
                 self.course = table.course.full_name
                 self.course_type = table.course.type.type_code
                 self.course_id = table.course_id
-                self.reserved_list = table.course.get_reserved_list()
+                self.reserved_list = table.course.get_reserved_list() if take_reserved else []
                 if self.course_type != 5:
                     self.teacher = table.course.teacher.name
                     self.classroom = table.classroom.short_name
@@ -67,7 +67,16 @@ class TeacherTimeTableView(View):
                 teacher = Teacher.objects.get(id=teacher_id)
             else:
                 teacher = Teacher.objects.get(code=int(teacher_code))
-            timetable = TimeTable.objects.filter(course__teacher=teacher).\
+            timetable = TimeTable.objects.select_related('classroom',
+                                                         'classroom__building',
+                                                         'course',
+                                                          'course__teacher',
+                                                          'course__type',
+                                                      'course__department',
+                                                      'course__department__faculty',
+                                                      'classroom__building',
+                                                      'time_day',
+                                                      'time_hour').filter(course__teacher=teacher).\
                                         order_by('time_hour_id', 'time_day_id').\
                                         exclude(Q(course__name=TIMETABLE_RESERVED) | Q(classroom__name=TIMETABLE_RESERVED) |
                                          Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
@@ -155,7 +164,7 @@ class DepartmentView(View):
         return render(request, self.template_name, context=context)
 
     def get_departments(self):
-        return Department.objects.all().order_by('name')
+        return Department.objects.select_related('faculty').all().order_by('name')
 
 
 class RoomView(View):
@@ -172,7 +181,16 @@ class RoomView(View):
             building_short_names = Building.objects.order_by('short_name')
             room_id = self.request.POST.get('room', 0)
             room = get_object_or_404(ClassRoom, id=room_id)
-            timetable = TimeTable.objects.filter(classroom=room).\
+            timetable = TimeTable.objects.select_related('classroom',
+                                                         'classroom__building',
+                                                          'course',
+                                                          'course__teacher',
+                                                          'course__type',
+                                                          'course__department',
+                                                          'course__department__faculty',
+                                                          'classroom__building',
+                                                          'time_day',
+                                                          'time_hour').filter(classroom=room).\
                 order_by('time_hour_id', 'time_day_id'). \
                 exclude(Q(course__name=TIMETABLE_RESERVED) | Q(classroom__name=TIMETABLE_RESERVED) |
                          Q(course__teacher__name=TIMETABLE_RESERVED) | Q(classroom__isnull=True) |
@@ -200,4 +218,4 @@ class RoomView(View):
         return render(request, self.template_name, context=context)
 
     def get_rooms(self):
-        return ClassRoom.objects.exclude(name=TIMETABLE_RESERVED).order_by('building__short_name')
+        return ClassRoom.objects.select_related('building',).exclude(name=TIMETABLE_RESERVED).order_by('building__short_name')

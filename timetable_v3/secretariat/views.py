@@ -79,7 +79,7 @@ class ClassRoomTimeTableView(LoginRequiredMixin, View):
         for table in result:
             while index < len(timetable) and timetable[index].time_hour_id == table.time_hour_id and \
                     timetable[index].time_day_id == table.time_day_id:
-                table.get_values(timetable[index])
+                table.get_values(timetable[index], take_reserved=True)
                 index += 1
         rooms = self.get_rooms()
         return render(request, self.template_name, context={'rooms': rooms, 'timetable': result,
