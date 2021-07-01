@@ -72,7 +72,8 @@ class ClassRoomTimeTableView(LoginRequiredMixin, View):
         for course in unused_courses:
             course.set_reserved_list(reserved_classroom.timetable_set.all())
         for table in timetable:
-            table.course.set_reserved_list(reserved_classroom.timetable_set.all())
+            if table.course:
+                table.course.set_reserved_list(reserved_classroom.timetable_set.all())
 
         days, hours, index = TimeDay.objects.all().order_by('pk'), TimeHour.objects.all().order_by('pk'), 0
         result = [ListTimeTable(time_day_id=day.id, time_hour_id=hour.id) for hour in hours for day in days]
